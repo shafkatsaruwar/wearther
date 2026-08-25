@@ -3,7 +3,7 @@ import SwiftUI
 struct TomorrowPlanView: View {
     let forecast: TomorrowForecast
     let outfit: OutfitRecommendation
-    var sweataWeatha: SweataWeathaMoment?
+    var sweataWeatha: SweataWeathaMoment? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
