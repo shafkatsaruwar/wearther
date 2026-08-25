@@ -15,6 +15,10 @@ final class HomeViewModel: ObservableObject {
     @Published var isSearching = false
     @Published var isCityPickerOpen = false
 
+    @Published var notificationsEnabled: Bool = NotificationSettingsStore.isEnabled
+    @Published var notificationPreview: WeatherAlert?
+    @Published var notificationPermissionDenied = false
+
     private var searchTask: Task<Void, Never>?
     private var loadTask: Task<Void, Never>?
 
@@ -52,6 +56,7 @@ final class HomeViewModel: ObservableObject {
             } else {
                 tomorrowOutfit = nil
             }
+            await refreshNotificationSchedule()
             isLoading = false
         }
         await loadTask?.value
@@ -104,5 +109,56 @@ final class HomeViewModel: ObservableObject {
 
     var dateLabel: String {
         Date().formatted(.dateTime.weekday(.wide).month(.wide).day())
+    }
+
+    func setNotificationsEnabled(_ enabled: Bool) async {
+        if enabled {
+            let status = await NotificationService.authorizationStatus()
+            if status == .denied {
+                notificationPermissionDenied = true
+                notificationsEnabled = false
+                NotificationSettingsStore.isEnabled = false
+                return
+            }
+
+            if status == .notDetermined {
+                let granted = await NotificationService.requestAuthorization()
+                guard granted else {
+                    notificationPermissionDenied = true
+                    notificationsEnabled = false
+                    NotificationSettingsStore.isEnabled = false
+                    return
+                }
+            }
+
+            notificationPermissionDenied = false
+            NotificationSettingsStore.isEnabled = true
+            notificationsEnabled = true
+            await refreshNotificationSchedule()
+        } else {
+            NotificationSettingsStore.isEnabled = false
+            notificationsEnabled = false
+            NotificationService.cancelTomorrowAlerts()
+            notificationPreview = nil
+        }
+    }
+
+    private func refreshNotificationSchedule() async {
+        guard let tomorrow = weather?.tomorrow else {
+            notificationPreview = nil
+            return
+        }
+
+        let alert = WeatherAlertPlanner.plan(for: tomorrow, cityName: location.name)
+        notificationPreview = alert
+
+        guard notificationsEnabled, let alert else {
+            if !notificationsEnabled {
+                NotificationService.cancelTomorrowAlerts()
+            }
+            return
+        }
+
+        await NotificationService.scheduleTomorrowAlert(alert: alert)
     }
 }

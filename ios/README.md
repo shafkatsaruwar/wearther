@@ -32,6 +32,8 @@ Flow: **Weather → OutfitRecommender → feedback → warmthBias → next recom
 
 Includes a **Plan for Tomorrow** section that fetches the next-day forecast and recommends suitable clothing ahead of time.
 
+**Tomorrow alerts** — optional local notifications (default ~7 PM) when rain, snow, or extreme temps are expected, e.g. *"It's gonna rain tomorrow! Make sure to pack an umbrella or rain wear."*
+
 ## Weather API key
 
 In `Wearther/Info.plist`:

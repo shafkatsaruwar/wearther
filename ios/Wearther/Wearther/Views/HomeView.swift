@@ -67,6 +67,8 @@ struct HomeView: View {
                 lastFeedback: viewModel.comfort.lastFeedback,
                 onFeedback: viewModel.submitFeedback
             )
+
+            NotificationSettingsView(viewModel: viewModel)
         }
     }
 
