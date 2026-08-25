@@ -25,6 +25,8 @@ open ios/Wearther/Wearther.xcodeproj
 | `Wearther/Services/OpenMeteoProvider.swift` | Live weather (no API key) |
 | `Wearther/Services/MockWeatherProvider.swift` | Offline / fallback mock data |
 | `Wearther/Services/ComfortStore.swift` | UserDefaults comfort bias + saved city |
+| `Wearther/Services/NotificationService.swift` | Local notifications for tomorrow weather alerts |
+| `Wearther/Models/WeatherAlert.swift` | Alert copy for rain, snow, cold, heat, wind |
 | `Wearther/ViewModels/HomeViewModel.swift` | Screen state |
 | `Wearther/Views/*` | SwiftUI UI |
 

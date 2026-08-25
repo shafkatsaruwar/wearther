@@ -28,7 +28,10 @@ final class HomeViewModel: ObservableObject {
     }
 
     func onAppear() {
-        Task { await refreshWeather() }
+        Task {
+            await syncNotificationPermissionState()
+            await refreshWeather()
+        }
     }
 
     func refreshWeather() async {
@@ -159,6 +162,26 @@ final class HomeViewModel: ObservableObject {
             return
         }
 
+        let status = await NotificationService.authorizationStatus()
+        guard status == .authorized || status == .provisional || status == .ephemeral else {
+            notificationPermissionDenied = status == .denied
+            return
+        }
+
         await NotificationService.scheduleTomorrowAlert(alert: alert)
+    }
+
+    private func syncNotificationPermissionState() async {
+        let status = await NotificationService.authorizationStatus()
+        if status == .denied {
+            notificationPermissionDenied = notificationsEnabled
+            if notificationsEnabled {
+                notificationsEnabled = false
+                NotificationSettingsStore.isEnabled = false
+                NotificationService.cancelTomorrowAlerts()
+            }
+        } else {
+            notificationPermissionDenied = false
+        }
     }
 }
