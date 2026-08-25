@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #e9eef3;
+  --ink: #1a1f24;
+  --ink-soft: #3a424a;
+  --ink-muted: #6a7380;
+  --ink-faint: #98a2ae;
+  --line: rgba(26, 31, 36, 0.08);
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-hover: rgba(255, 255, 255, 0.92);
+  --fit-surface: rgba(255, 255, 255, 0.78);
+  --fit-icon-bg: rgba(26, 31, 36, 0.04);
+  --accent: #3d6b5e;
+  --glow: rgba(110, 150, 165, 0.32);
+  --glow-2: rgba(130, 150, 140, 0.22);
+  --atmosphere: linear-gradient(
+    165deg,
+    #dde6ee 0%,
+    #e7edf1 45%,
+    #e2e9e6 100%
+  );
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1215;
+    --ink: #f2f4f6;
+    --ink-soft: #c5c8d0;
+    --ink-muted: #8b949e;
+    --ink-faint: #66707a;
+    --line: rgba(242, 244, 246, 0.1);
+    --surface: rgba(28, 33, 38, 0.82);
+    --surface-hover: rgba(38, 44, 50, 0.95);
+    --fit-surface: rgba(24, 29, 34, 0.88);
+    --fit-icon-bg: rgba(255, 255, 255, 0.05);
+    --accent: #7eb8a4;
+    --glow: rgba(70, 110, 120, 0.28);
+    --glow-2: rgba(90, 80, 60, 0.22);
+    --atmosphere: linear-gradient(
+      165deg,
+      #12161a 0%,
+      #171410 48%,
+      #101416 100%
+    );
+  }
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--ink);
+  --font-sans: var(--font-outfit);
+  --font-display: var(--font-fraunces);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.font-display {
+  font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+  font-optical-sizing: auto;
+}
+
+.bg-atmosphere {
+  background: var(--atmosphere);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(18px, -14px) scale(1.05);
+  }
+}
+
+@keyframes drift-slow {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-16px, 10px) scale(1.08);
+  }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-drift {
+  animation: drift 14s ease-in-out infinite;
+}
+
+.animate-drift-slow {
+  animation: drift-slow 18s ease-in-out infinite;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 35%, transparent);
+}
