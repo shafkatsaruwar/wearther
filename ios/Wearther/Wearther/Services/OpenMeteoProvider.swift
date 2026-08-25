@@ -1,6 +1,6 @@
 import Foundation
 
-enum OpenMeteoProvider: WeatherProvider {
+struct OpenMeteoProvider: WeatherProvider {
     static func condition(from code: Int) -> (label: String, key: String) {
         switch code {
         case 0: return ("Clear", "clear")
