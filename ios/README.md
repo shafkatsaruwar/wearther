@@ -30,6 +30,8 @@ open ios/Wearther/Wearther.xcodeproj
 
 Flow: **Weather → OutfitRecommender → feedback → warmthBias → next recommendation**.
 
+Includes a **Plan for Tomorrow** section that fetches the next-day forecast and recommends suitable clothing ahead of time.
+
 ## Weather API key
 
 In `Wearther/Info.plist`:

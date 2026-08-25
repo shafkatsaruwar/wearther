@@ -5,6 +5,7 @@ final class HomeViewModel: ObservableObject {
     @Published var location: LocationResult
     @Published var weather: WeatherData?
     @Published var outfit: OutfitRecommendation?
+    @Published var tomorrowOutfit: OutfitRecommendation?
     @Published var comfort: ComfortPreference
     @Published var isLoading = true
     @Published var errorMessage: String?
@@ -42,6 +43,15 @@ final class HomeViewModel: ObservableObject {
             weather = data
             comfort = ComfortStore.loadComfortPreference()
             outfit = OutfitRecommender.recommend(.init(weather: data, comfort: comfort))
+            if let tomorrow = data.tomorrow {
+                tomorrowOutfit = OutfitRecommender.recommendForTomorrow(
+                    tomorrow,
+                    locationName: location.name,
+                    comfort: comfort
+                )
+            } else {
+                tomorrowOutfit = nil
+            }
             isLoading = false
         }
         await loadTask?.value
@@ -60,6 +70,13 @@ final class HomeViewModel: ObservableObject {
         comfort = ComfortStore.applyFeedback(comfort, feedback: feedback)
         if let weather {
             outfit = OutfitRecommender.recommend(.init(weather: weather, comfort: comfort))
+            if let tomorrow = weather.tomorrow {
+                tomorrowOutfit = OutfitRecommender.recommendForTomorrow(
+                    tomorrow,
+                    locationName: location.name,
+                    comfort: comfort
+                )
+            }
         }
     }
 

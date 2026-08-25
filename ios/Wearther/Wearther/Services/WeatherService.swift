@@ -62,7 +62,8 @@ enum WeatherService {
             precipitationChance: 10,
             hourly: [],
             units: "imperial",
-            fetchedAt: ISO8601DateFormatter().string(from: Date())
+            fetchedAt: ISO8601DateFormatter().string(from: Date()),
+            tomorrow: nil
         )
     }
 }

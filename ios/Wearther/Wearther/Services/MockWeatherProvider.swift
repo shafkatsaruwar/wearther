@@ -59,8 +59,69 @@ enum MockWeatherProvider: WeatherProvider {
             precipitationChance: base.precipitationChance,
             hourly: buildHourly(baseTemp: base.temperature, baseFeels: base.feelsLike),
             units: "imperial",
-            fetchedAt: ISO8601DateFormatter().string(from: Date())
+            fetchedAt: ISO8601DateFormatter().string(from: Date()),
+            tomorrow: mockTomorrow(for: name, today: base)
         )
+    }
+
+    private func mockTomorrow(
+        for name: String,
+        today: (temperature: Int, feelsLike: Int, condition: String, conditionCode: String, high: Int, low: Int, humidity: Int, windSpeed: Int, precipitationChance: Int)
+    ) -> TomorrowForecast {
+        let tomorrowProfiles: [String: (high: Int, low: Int, feelsLike: Int, condition: String, conditionCode: String, humidity: Int, windSpeed: Int, precipitationChance: Int)] = [
+            "Boston": (58, 48, 52, "Rain", "rain", 75, 16, 65),
+            "Miami": (86, 78, 88, "Partly Cloudy", "partly-cloudy", 80, 10, 30),
+            "Chicago": (35, 25, 28, "Snow", "snow", 60, 18, 25),
+            "London": (52, 44, 48, "Light Rain", "rain", 82, 14, 75),
+            "San Francisco": (62, 54, 58, "Foggy", "fog", 78, 14, 10),
+        ]
+
+        let profile = tomorrowProfiles[name] ?? (
+            high: today.high - 4,
+            low: today.low - 3,
+            feelsLike: today.feelsLike - 3,
+            condition: today.condition,
+            conditionCode: today.conditionCode,
+            humidity: today.humidity,
+            windSpeed: today.windSpeed,
+            precipitationChance: min(100, today.precipitationChance + 10)
+        )
+
+        let tomorrowDate = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+        let dateLabel = tomorrowDate.formatted(.dateTime.weekday(.wide).month(.wide).day())
+
+        return TomorrowForecast(
+            dateLabel: dateLabel,
+            high: profile.high,
+            low: profile.low,
+            feelsLike: profile.feelsLike,
+            condition: profile.condition,
+            conditionCode: profile.conditionCode,
+            humidity: profile.humidity,
+            windSpeed: profile.windSpeed,
+            precipitationChance: profile.precipitationChance,
+            hourly: buildTomorrowHourly(baseTemp: profile.feelsLike, baseFeels: profile.feelsLike)
+        )
+    }
+
+    private func buildTomorrowHourly(baseTemp: Int, baseFeels: Int) -> [HourlyWeather] {
+        let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+        let slots = [9, 12, 18]
+        let offsets = [-4, 2, -3]
+
+        return zip(slots, offsets).map { hour, offset in
+            var time = Calendar.current.date(bySettingHour: hour, minute: 0, second: 0, of: tomorrow) ?? tomorrow
+            if time < Date() {
+                time = Calendar.current.date(byAdding: .day, value: 1, to: time) ?? time
+            }
+            return HourlyWeather(
+                time: time.ISO8601Format(),
+                temperature: baseTemp + offset,
+                precipitationChance: hour == 18 ? 40 : 20,
+                condition: hour == 18 ? "Cloudy" : "Partly Cloudy",
+                feelsLike: baseFeels + offset
+            )
+        }
     }
 
     private func buildHourly(baseTemp: Int, baseFeels: Int) -> [HourlyWeather] {

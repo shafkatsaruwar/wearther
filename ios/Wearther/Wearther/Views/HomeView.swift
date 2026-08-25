@@ -56,6 +56,13 @@ struct HomeView: View {
 
             HourlyForecastView(hours: weather.hourly, comfort: viewModel.comfort)
 
+            if let tomorrow = weather.tomorrow, let tomorrowOutfit = viewModel.tomorrowOutfit {
+                Divider()
+                    .overlay(AppTheme.line)
+
+                TomorrowPlanView(forecast: tomorrow, outfit: tomorrowOutfit)
+            }
+
             ComfortFeedbackView(
                 lastFeedback: viewModel.comfort.lastFeedback,
                 onFeedback: viewModel.submitFeedback

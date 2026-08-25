@@ -1,11 +1,17 @@
 import SwiftUI
 
 struct OutfitCardView: View {
+    let sectionTitle: String
     let outfit: OutfitRecommendation
+
+    init(sectionTitle: String = "TODAY'S FIT", outfit: OutfitRecommendation) {
+        self.sectionTitle = sectionTitle
+        self.outfit = outfit
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("TODAY'S FIT")
+            Text(sectionTitle)
                 .font(.caption2.weight(.semibold))
                 .tracking(2.2)
                 .foregroundStyle(AppTheme.accent)
