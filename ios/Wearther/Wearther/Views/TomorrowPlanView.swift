@@ -3,6 +3,7 @@ import SwiftUI
 struct TomorrowPlanView: View {
     let forecast: TomorrowForecast
     let outfit: OutfitRecommendation
+    var sweataWeatha: SweataWeathaMoment?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -34,6 +35,10 @@ struct TomorrowPlanView: View {
 
                 WeatherIconView(code: forecast.conditionCode)
                     .font(.system(size: 36))
+            }
+
+            if let sweataWeatha {
+                SweataWeathaView(moment: sweataWeatha)
             }
 
             OutfitCardView(

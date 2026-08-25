@@ -52,6 +52,10 @@ struct HomeView: View {
             Divider()
                 .overlay(AppTheme.line)
 
+            if let moment = viewModel.sweataWeathaToday {
+                SweataWeathaView(moment: moment)
+            }
+
             OutfitCardView(outfit: outfit)
 
             HourlyForecastView(hours: weather.hourly, comfort: viewModel.comfort)
@@ -60,7 +64,11 @@ struct HomeView: View {
                 Divider()
                     .overlay(AppTheme.line)
 
-                TomorrowPlanView(forecast: tomorrow, outfit: tomorrowOutfit)
+                TomorrowPlanView(
+                    forecast: tomorrow,
+                    outfit: tomorrowOutfit,
+                    sweataWeatha: viewModel.sweataWeathaTomorrow
+                )
             }
 
             ComfortFeedbackView(

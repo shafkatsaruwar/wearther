@@ -114,6 +114,16 @@ final class HomeViewModel: ObservableObject {
         Date().formatted(.dateTime.weekday(.wide).month(.wide).day())
     }
 
+    var sweataWeathaToday: SweataWeathaMoment? {
+        guard let weather else { return nil }
+        return SweataWeatha.todayMoment(for: weather)
+    }
+
+    var sweataWeathaTomorrow: SweataWeathaMoment? {
+        guard let tomorrow = weather?.tomorrow else { return nil }
+        return SweataWeatha.tomorrowMoment(for: tomorrow, cityName: location.name)
+    }
+
     func setNotificationsEnabled(_ enabled: Bool) async {
         if enabled {
             let status = await NotificationService.authorizationStatus()
@@ -153,6 +163,7 @@ final class HomeViewModel: ObservableObject {
         }
 
         let alert = WeatherAlertPlanner.plan(for: tomorrow, cityName: location.name)
+            ?? SweataWeatha.notificationAlert(for: tomorrow, cityName: location.name)
         notificationPreview = alert
 
         guard notificationsEnabled, let alert else {
