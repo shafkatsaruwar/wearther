@@ -16,7 +16,7 @@ struct HomeView: View {
                     content(weather: weather, outfit: outfit)
                 } else if let error = viewModel.errorMessage {
                     Text(error)
-                        .font(.body)
+                        .font(AppTheme.body)
                         .foregroundStyle(AppTheme.inkMuted)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.top, 48)

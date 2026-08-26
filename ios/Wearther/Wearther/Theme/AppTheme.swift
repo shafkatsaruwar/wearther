@@ -21,6 +21,35 @@ enum AppTheme {
     static let bgTop = linen
     static let bgMid = ashGrey
     static let bgBottom = linen
+
+    // MARK: - Typography (Fraunces display + Outfit body)
+
+    static func display(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        .custom("Fraunces", size: size).weight(weight)
+    }
+
+    static func sans(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
+        .custom("Outfit", size: size).weight(weight)
+    }
+
+    static let titleCity = display(34, weight: .semibold)
+    static let titleOutfit = display(30, weight: .regular)
+    static let titleTemp = display(68, weight: .regular)
+    static let titleSection = display(22, weight: .semibold)
+    static let titleSweata = display(28, weight: .semibold)
+    static let titleTomorrowTemp = display(44, weight: .regular)
+
+    static let body = sans(16)
+    static let bodyMedium = sans(16, weight: .medium)
+    static let callout = sans(15)
+    static let subheadline = sans(14)
+    static let subheadlineMedium = sans(14, weight: .medium)
+    static let subheadlineSemibold = sans(14, weight: .semibold)
+    static let caption = sans(12)
+    static let captionMedium = sans(12, weight: .medium)
+    static let captionSemibold = sans(12, weight: .semibold)
+    static let overline = sans(11, weight: .semibold)
+    static let micro = sans(10, weight: .semibold)
 }
 
 /// Soft wine / ash / linen atmosphere from the brand palette (no text).
@@ -33,7 +62,6 @@ struct AtmosphereBackground: View {
                 .frame(width: geo.size.width, height: geo.size.height)
                 .clipped()
                 .overlay {
-                    // Soft fallback blend if the asset ever fails to load.
                     LinearGradient(
                         stops: [
                             .init(color: AppTheme.linen.opacity(0.15), location: 0),

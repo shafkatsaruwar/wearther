@@ -12,13 +12,13 @@ struct CitySearchView: View {
             } label: {
                 HStack(spacing: 8) {
                     Text(viewModel.location.name)
-                        .font(.system(size: 34, weight: .semibold, design: .serif))
+                        .font(AppTheme.titleCity)
                         .foregroundStyle(AppTheme.ink)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
 
                     Image(systemName: "chevron.down")
-                        .font(.caption.weight(.semibold))
+                        .font(AppTheme.captionSemibold)
                         .foregroundStyle(AppTheme.inkMuted)
 
                     Spacer(minLength: 0)
@@ -34,6 +34,7 @@ struct CitySearchView: View {
                         get: { viewModel.searchQuery },
                         set: { viewModel.updateSearchQuery($0) }
                     ))
+                    .font(AppTheme.body)
                     .textFieldStyle(.plain)
                     .padding(12)
                     .foregroundStyle(AppTheme.ink)
@@ -44,19 +45,19 @@ struct CitySearchView: View {
                         LazyVStack(alignment: .leading, spacing: 0) {
                             if viewModel.isSearching && viewModel.searchQuery.trimmingCharacters(in: .whitespaces).count >= 2 {
                                 Text("Searching…")
-                                    .font(.subheadline)
+                                    .font(AppTheme.subheadline)
                                     .foregroundStyle(AppTheme.inkMuted)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 12)
                             } else if viewModel.searchQuery.trimmingCharacters(in: .whitespaces).count >= 2 && viewModel.searchResults.isEmpty && !viewModel.isSearching {
                                 Text("No cities found")
-                                    .font(.subheadline)
+                                    .font(AppTheme.subheadline)
                                     .foregroundStyle(AppTheme.inkMuted)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 12)
                             } else if viewModel.searchQuery.trimmingCharacters(in: .whitespaces).count < 2 {
                                 Text("Type at least 2 letters")
-                                    .font(.subheadline)
+                                    .font(AppTheme.subheadline)
                                     .foregroundStyle(AppTheme.inkMuted)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 12)
@@ -68,10 +69,10 @@ struct CitySearchView: View {
                                 } label: {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(loc.name)
-                                            .font(.subheadline.weight(.medium))
+                                            .font(AppTheme.subheadlineMedium)
                                             .foregroundStyle(AppTheme.ink)
                                         Text([loc.region, loc.country].compactMap { $0 }.joined(separator: ", "))
-                                            .font(.caption)
+                                            .font(AppTheme.caption)
                                             .foregroundStyle(AppTheme.inkMuted)
                                     }
                                     .frame(maxWidth: .infinity, alignment: .leading)

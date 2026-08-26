@@ -12,10 +12,10 @@ struct NotificationSettingsView: View {
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Tomorrow alerts")
-                        .font(.subheadline.weight(.semibold))
+                        .font(AppTheme.subheadlineSemibold)
                         .foregroundStyle(AppTheme.ink)
                     Text("Get a heads-up around \(NotificationService.formattedNextDeliveryTime()) when rain, snow, or extreme temps are expected.")
-                        .font(.caption)
+                        .font(AppTheme.caption)
                         .foregroundStyle(AppTheme.inkMuted)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -34,23 +34,23 @@ struct NotificationSettingsView: View {
 
             if viewModel.notificationPermissionDenied {
                 Text("Notifications are off in Settings. Enable them to get tomorrow's weather alerts.")
-                    .font(.caption)
+                    .font(AppTheme.caption)
                     .foregroundStyle(AppTheme.inkSoft)
             }
 
             if viewModel.notificationsEnabled, let preview = viewModel.notificationPreview {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("NEXT ALERT PREVIEW")
-                        .font(.caption2.weight(.semibold))
+                        .font(AppTheme.micro)
                         .tracking(1.6)
                         .foregroundStyle(AppTheme.inkFaint)
 
                     Text(preview.title)
-                        .font(.subheadline.weight(.semibold))
+                        .font(AppTheme.subheadlineSemibold)
                         .foregroundStyle(AppTheme.ink)
 
                     Text(preview.body)
-                        .font(.caption)
+                        .font(AppTheme.caption)
                         .foregroundStyle(AppTheme.inkSoft)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -64,7 +64,7 @@ struct NotificationSettingsView: View {
                 )
             } else if viewModel.notificationsEnabled {
                 Text("No alerts needed for tomorrow — weather looks manageable.")
-                    .font(.caption)
+                    .font(AppTheme.caption)
                     .foregroundStyle(AppTheme.inkFaint)
             }
         }

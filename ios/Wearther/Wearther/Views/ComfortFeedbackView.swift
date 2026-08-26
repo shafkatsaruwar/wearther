@@ -22,7 +22,7 @@ struct ComfortFeedbackView: View {
                 .overlay(AppTheme.line)
 
             Text("How did this outfit feel?")
-                .font(.subheadline)
+                .font(AppTheme.subheadline)
                 .foregroundStyle(AppTheme.inkMuted)
                 .frame(maxWidth: .infinity, alignment: .center)
 
@@ -35,7 +35,7 @@ struct ComfortFeedbackView: View {
                         HStack(spacing: 4) {
                             Text(opt.emoji)
                             Text(opt.label)
-                                .font(.caption.weight(.medium))
+                                .font(AppTheme.captionMedium)
                                 .lineLimit(1)
                         }
                         .frame(maxWidth: .infinity)
@@ -55,7 +55,7 @@ struct ComfortFeedbackView: View {
 
             if lastFeedback != nil {
                 Text("Saved locally — future fits will adapt slightly.")
-                    .font(.caption2)
+                    .font(AppTheme.caption)
                     .foregroundStyle(AppTheme.inkFaint)
             }
         }

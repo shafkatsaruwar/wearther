@@ -10,24 +10,24 @@ struct TomorrowPlanView: View {
             HStack(alignment: .top, spacing: 16) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(forecast.dateLabel)
-                        .font(.subheadline)
+                        .font(AppTheme.subheadline)
                         .foregroundStyle(AppTheme.inkMuted)
 
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Text("\(forecast.feelsLike)°")
-                            .font(.system(size: 44, weight: .regular, design: .serif))
+                            .font(AppTheme.titleTomorrowTemp)
                             .foregroundStyle(AppTheme.ink)
                         Text("feels like")
-                            .font(.caption)
+                            .font(AppTheme.caption)
                             .foregroundStyle(AppTheme.inkFaint)
                     }
 
                     Text("\(forecast.condition) • H \(forecast.high)° / L \(forecast.low)°")
-                        .font(.subheadline)
+                        .font(AppTheme.subheadline)
                         .foregroundStyle(AppTheme.inkSoft)
 
                     Text("Rain \(forecast.precipitationChance)% • Wind \(forecast.windSpeed) mph")
-                        .font(.caption)
+                        .font(AppTheme.caption)
                         .foregroundStyle(AppTheme.inkMuted)
                 }
 

@@ -44,6 +44,11 @@
 	<string>open-meteo</string>
 	<key>OPENWEATHER_API_KEY</key>
 	<string></string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Fonts/Fraunces.ttf</string>
+		<string>Fonts/Outfit.ttf</string>
+	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>

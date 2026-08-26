@@ -11,17 +11,17 @@ struct SweataWeathaView: View {
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(moment.headline)
-                        .font(.system(size: 28, weight: .semibold, design: .serif))
+                        .font(AppTheme.titleSweata)
                         .foregroundStyle(AppTheme.ink)
 
                     Text(moment.subtitle)
-                        .font(.caption.weight(.medium))
+                        .font(AppTheme.captionMedium)
                         .foregroundStyle(AppTheme.accent)
                 }
             }
 
             Text(moment.line)
-                .font(.body)
+                .font(AppTheme.body)
                 .foregroundStyle(AppTheme.inkSoft)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -30,8 +30,8 @@ struct SweataWeathaView: View {
         .background(
             LinearGradient(
                 colors: [
-                    Color(red: 0.93, green: 0.90, blue: 0.84),
-                    Color(red: 0.89, green: 0.91, blue: 0.88),
+                    Color(red: 0.94, green: 0.90, blue: 0.87),
+                    Color(red: 0.90, green: 0.91, blue: 0.88),
                 ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing

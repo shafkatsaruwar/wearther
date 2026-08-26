@@ -14,18 +14,18 @@ struct TomorrowPlanButton: View {
             HStack(alignment: .center, spacing: 14) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("PLAN FOR TOMORROW")
-                        .font(.caption2.weight(.semibold))
+                        .font(AppTheme.micro)
                         .tracking(2.0)
                         .foregroundStyle(AppTheme.accent)
 
                     Text(outfit.title)
-                        .font(.system(size: 22, weight: .semibold, design: .serif))
+                        .font(AppTheme.titleSection)
                         .foregroundStyle(AppTheme.ink)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
 
                     Text("\(forecast.feelsLike)° · \(forecast.condition) · H \(forecast.high)° / L \(forecast.low)°")
-                        .font(.subheadline)
+                        .font(AppTheme.subheadline)
                         .foregroundStyle(AppTheme.inkMuted)
                         .lineLimit(1)
                 }
@@ -36,7 +36,7 @@ struct TomorrowPlanButton: View {
                     .font(.system(size: 28))
 
                 Image(systemName: "chevron.right")
-                    .font(.subheadline.weight(.semibold))
+                    .font(AppTheme.subheadlineSemibold)
                     .foregroundStyle(AppTheme.inkFaint)
             }
             .padding(20)
@@ -86,7 +86,7 @@ struct TomorrowPlanSheet: View {
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") { dismiss() }
-                        .fontWeight(.semibold)
+                        .font(AppTheme.subheadlineSemibold)
                         .foregroundStyle(AppTheme.accent)
                 }
             }

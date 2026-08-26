@@ -8,7 +8,7 @@ struct HourlyForecastView: View {
         if hours.isEmpty { EmptyView() } else {
             VStack(alignment: .leading, spacing: 16) {
                 Text("LATER TODAY")
-                    .font(.caption2.weight(.semibold))
+                    .font(AppTheme.micro)
                     .tracking(2.2)
                     .foregroundStyle(AppTheme.inkFaint)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -31,13 +31,13 @@ struct HourlyForecastView: View {
 
         return VStack(alignment: .leading, spacing: 4) {
             Text(label)
-                .font(.caption)
+                .font(AppTheme.caption)
                 .foregroundStyle(AppTheme.inkMuted)
             Text("\(hour.temperature)°")
-                .font(.title3.weight(.medium))
+                .font(AppTheme.sans(18, weight: .medium))
                 .foregroundStyle(AppTheme.ink)
             Text(tip)
-                .font(.caption2)
+                .font(AppTheme.caption)
                 .foregroundStyle(AppTheme.inkFaint)
                 .fixedSize(horizontal: false, vertical: true)
         }

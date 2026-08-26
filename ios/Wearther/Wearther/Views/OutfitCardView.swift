@@ -12,12 +12,12 @@ struct OutfitCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text(sectionTitle)
-                .font(.caption2.weight(.semibold))
+                .font(AppTheme.micro)
                 .tracking(2.2)
                 .foregroundStyle(AppTheme.accent)
 
             Text(outfit.title)
-                .font(.system(size: 30, weight: .regular, design: .serif))
+                .font(AppTheme.titleOutfit)
                 .foregroundStyle(AppTheme.ink)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
@@ -31,14 +31,14 @@ struct OutfitCardView: View {
             }
 
             Text(outfit.explanation)
-                .font(.body)
+                .font(AppTheme.body)
                 .foregroundStyle(AppTheme.inkSoft)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
 
             if let bringLater = outfit.bringLater {
                 Text(bringLater)
-                    .font(.subheadline.weight(.medium))
+                    .font(AppTheme.subheadlineMedium)
                     .foregroundStyle(AppTheme.accent)
             }
         }
@@ -58,7 +58,7 @@ struct OutfitCardView: View {
             }
 
             Text(item)
-                .font(.caption2)
+                .font(AppTheme.caption)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(AppTheme.inkMuted)
                 .lineLimit(3)
