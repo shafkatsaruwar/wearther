@@ -16,38 +16,49 @@ enum AppTheme {
     static let bgBottom = Color(red: 0.89, green: 0.91, blue: 0.90)
 }
 
+/// Decorative atmosphere that never expands the layout (avoids left-edge clipping).
 struct AtmosphereBackground: View {
     var body: some View {
-        ZStack {
-            LinearGradient(
-                colors: [AppTheme.bgTop, AppTheme.bgMid, AppTheme.bgBottom],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [Color(red: 0.43, green: 0.59, blue: 0.65).opacity(0.32), .clear],
-                        center: .center,
-                        startRadius: 0,
-                        endRadius: 220
-                    )
+        GeometryReader { geo in
+            ZStack {
+                LinearGradient(
+                    colors: [AppTheme.bgTop, AppTheme.bgMid, AppTheme.bgBottom],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
                 )
-                .frame(width: 440, height: 440)
-                .offset(x: -120, y: -180)
-                .blur(radius: 40)
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [Color(red: 0.51, green: 0.59, blue: 0.55).opacity(0.22), .clear],
-                        center: .center,
-                        startRadius: 0,
-                        endRadius: 180
+
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                Color(red: 0.43, green: 0.59, blue: 0.65).opacity(0.32),
+                                .clear,
+                            ],
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: 220
+                        )
                     )
-                )
-                .frame(width: 360, height: 360)
-                .offset(x: 140, y: 320)
-                .blur(radius: 36)
+                    .frame(width: 440, height: 440)
+                    .position(x: 40, y: 40)
+
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                Color(red: 0.51, green: 0.59, blue: 0.55).opacity(0.22),
+                                .clear,
+                            ],
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: 180
+                        )
+                    )
+                    .frame(width: 360, height: 360)
+                    .position(x: geo.size.width - 20, y: geo.size.height * 0.72)
+            }
+            .frame(width: geo.size.width, height: geo.size.height)
+            .clipped()
         }
         .ignoresSafeArea()
     }
