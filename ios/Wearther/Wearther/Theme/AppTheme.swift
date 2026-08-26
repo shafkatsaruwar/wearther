@@ -1,65 +1,53 @@
 import SwiftUI
 
 enum AppTheme {
-    static let accent = Color(red: 0.24, green: 0.42, blue: 0.37)
-    static let ink = Color(red: 0.10, green: 0.12, blue: 0.14)
-    static let inkSoft = Color(red: 0.23, green: 0.26, blue: 0.29)
-    static let inkMuted = Color(red: 0.42, green: 0.45, blue: 0.50)
-    static let inkFaint = Color(red: 0.60, green: 0.64, blue: 0.68)
-    static let line = Color.black.opacity(0.08)
+    /// Dark Wine
+    static let darkWine = Color(red: 0x6F / 255, green: 0x1D / 255, blue: 0x1B / 255)
+    /// Linen
+    static let linen = Color(red: 0xF0 / 255, green: 0xE5 / 255, blue: 0xDE / 255)
+    /// Ash Grey
+    static let ashGrey = Color(red: 0xAD / 255, green: 0xBD / 255, blue: 0xAB / 255)
+
+    static let accent = darkWine
+    static let ink = Color(red: 0.18, green: 0.10, blue: 0.09)
+    static let inkSoft = Color(red: 0.32, green: 0.22, blue: 0.20)
+    static let inkMuted = Color(red: 0.45, green: 0.36, blue: 0.33)
+    static let inkFaint = Color(red: 0.58, green: 0.50, blue: 0.46)
+    static let line = darkWine.opacity(0.12)
     static let surface = Color.white.opacity(0.72)
     static let surfaceHover = Color.white.opacity(0.92)
-    static let fitSurface = Color.white.opacity(0.78)
-    static let fitIconBg = Color.black.opacity(0.04)
-    static let bgTop = Color(red: 0.87, green: 0.90, blue: 0.93)
-    static let bgMid = Color(red: 0.91, green: 0.93, blue: 0.95)
-    static let bgBottom = Color(red: 0.89, green: 0.91, blue: 0.90)
+    static let fitSurface = Color.white.opacity(0.82)
+    static let fitIconBg = darkWine.opacity(0.06)
+    static let bgTop = linen
+    static let bgMid = ashGrey
+    static let bgBottom = linen
 }
 
-/// Decorative atmosphere that never expands the layout (avoids left-edge clipping).
+/// Soft wine / ash / linen atmosphere from the brand palette (no text).
 struct AtmosphereBackground: View {
     var body: some View {
         GeometryReader { geo in
-            ZStack {
-                LinearGradient(
-                    colors: [AppTheme.bgTop, AppTheme.bgMid, AppTheme.bgBottom],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                Color(red: 0.43, green: 0.59, blue: 0.65).opacity(0.32),
-                                .clear,
-                            ],
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: 220
-                        )
+            Image("Atmosphere")
+                .resizable()
+                .scaledToFill()
+                .frame(width: geo.size.width, height: geo.size.height)
+                .clipped()
+                .overlay {
+                    // Soft fallback blend if the asset ever fails to load.
+                    LinearGradient(
+                        stops: [
+                            .init(color: AppTheme.linen.opacity(0.15), location: 0),
+                            .init(color: .clear, location: 0.35),
+                            .init(color: AppTheme.ashGrey.opacity(0.12), location: 0.55),
+                            .init(color: AppTheme.linen.opacity(0.35), location: 1),
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
                     )
-                    .frame(width: 440, height: 440)
-                    .position(x: 40, y: 40)
-
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [
-                                Color(red: 0.51, green: 0.59, blue: 0.55).opacity(0.22),
-                                .clear,
-                            ],
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: 180
-                        )
-                    )
-                    .frame(width: 360, height: 360)
-                    .position(x: geo.size.width - 20, y: geo.size.height * 0.72)
-            }
-            .frame(width: geo.size.width, height: geo.size.height)
-            .clipped()
+                    .allowsHitTesting(false)
+                }
         }
+        .background(AppTheme.linen)
         .ignoresSafeArea()
     }
 }

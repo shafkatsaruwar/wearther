@@ -80,7 +80,7 @@ struct TomorrowPlanSheet: View {
                 .padding(.top, 8)
                 .padding(.bottom, 40)
             }
-            .background(AppTheme.bgMid.ignoresSafeArea())
+            .background(AppTheme.linen.ignoresSafeArea())
             .navigationTitle("Tomorrow")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
