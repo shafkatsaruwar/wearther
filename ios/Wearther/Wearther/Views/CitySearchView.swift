@@ -10,15 +10,21 @@ struct CitySearchView: View {
                     viewModel.isCityPickerOpen.toggle()
                 }
             } label: {
-                HStack(spacing: 6) {
+                HStack(spacing: 8) {
                     Text(viewModel.location.name)
                         .font(.system(size: 34, weight: .semibold, design: .serif))
                         .foregroundStyle(AppTheme.ink)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+
                     Image(systemName: "chevron.down")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(AppTheme.inkMuted)
-                        .padding(.top, 6)
+
+                    Spacer(minLength: 0)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
@@ -88,5 +94,6 @@ struct CitySearchView: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

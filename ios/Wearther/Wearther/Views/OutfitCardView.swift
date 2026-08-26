@@ -15,52 +15,66 @@ struct OutfitCardView: View {
                 .font(.caption2.weight(.semibold))
                 .tracking(2.2)
                 .foregroundStyle(AppTheme.accent)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             Text(outfit.title)
-                .font(.system(size: 36, weight: .regular, design: .serif))
+                .font(.system(size: 32, weight: .regular, design: .serif))
                 .foregroundStyle(AppTheme.ink)
+                .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 14)
 
-            LazyVGrid(
-                columns: [GridItem(.adaptive(minimum: 72), spacing: 12)],
-                alignment: .leading,
-                spacing: 12
-            ) {
+            HStack(alignment: .top, spacing: 12) {
                 ForEach(outfit.items, id: \.self) { item in
-                    VStack(spacing: 8) {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(AppTheme.fitIconBg)
-                            .frame(width: 56, height: 56)
-                            .overlay {
-                                ClothingGlyphView(label: item)
-                            }
-                        Text(item)
-                            .font(.caption2)
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(AppTheme.inkMuted)
-                            .frame(maxWidth: 88)
-                    }
+                    clothingItem(item)
+                }
+                if outfit.items.count < 4 {
+                    Spacer(minLength: 0)
                 }
             }
-            .padding(.top, 28)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, 24)
 
             Text(outfit.explanation)
                 .font(.body)
                 .foregroundStyle(AppTheme.inkSoft)
+                .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, 28)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 24)
 
             if let bringLater = outfit.bringLater {
                 Text(bringLater)
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(AppTheme.accent)
-                    .padding(.top, 16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 12)
             }
         }
-        .padding(28)
+        .padding(.horizontal, 22)
+        .padding(.vertical, 24)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(AppTheme.fitSurface)
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+    }
+
+    private func clothingItem(_ item: String) -> some View {
+        VStack(spacing: 8) {
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(AppTheme.fitIconBg)
+                .frame(width: 52, height: 52)
+                .overlay {
+                    ClothingGlyphView(label: item)
+                }
+
+            Text(item)
+                .font(.caption2)
+                .multilineTextAlignment(.center)
+                .foregroundStyle(AppTheme.inkMuted)
+                .lineLimit(3)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .frame(width: 72, alignment: .top)
     }
 }
