@@ -11,6 +11,7 @@ struct HourlyForecastView: View {
                     .font(.caption2.weight(.semibold))
                     .tracking(2.2)
                     .foregroundStyle(AppTheme.inkFaint)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
@@ -20,6 +21,7 @@ struct HourlyForecastView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
