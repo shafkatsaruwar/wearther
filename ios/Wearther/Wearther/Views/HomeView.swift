@@ -34,14 +34,8 @@ struct HomeView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Wearther")
-                .font(.system(size: 28, weight: .semibold, design: .serif))
-                .foregroundStyle(AppTheme.ink)
-
-            CitySearchView(viewModel: viewModel)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        CitySearchView(viewModel: viewModel)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     @ViewBuilder
