@@ -22,14 +22,31 @@ enum AppTheme {
     static let bgMid = ashGrey
     static let bgBottom = linen
 
-    // MARK: - Typography (Fraunces display + Outfit body)
+    // MARK: - Typography
+    // Playfair Display for headlines, Literata for body — warm serif pairing.
 
     static func display(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        .custom("Fraunces", size: size).weight(weight)
+        let name: String
+        switch weight {
+        case .semibold, .bold, .heavy, .black:
+            name = "PlayfairDisplay-SemiBold"
+        default:
+            name = "PlayfairDisplay-Regular"
+        }
+        return .custom(name, size: size)
     }
 
     static func sans(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        .custom("Outfit", size: size).weight(weight)
+        let name: String
+        switch weight {
+        case .medium:
+            name = "Literata-Medium"
+        case .semibold, .bold, .heavy, .black:
+            name = "Literata-SemiBold"
+        default:
+            name = "Literata-Regular"
+        }
+        return .custom(name, size: size)
     }
 
     static let titleCity = display(34, weight: .semibold)
@@ -49,7 +66,7 @@ enum AppTheme {
     static let captionMedium = sans(12, weight: .medium)
     static let captionSemibold = sans(12, weight: .semibold)
     static let overline = sans(11, weight: .semibold)
-    static let micro = sans(10, weight: .semibold)
+    static let micro = sans(11, weight: .semibold)
 }
 
 /// Soft wine / ash / linen atmosphere from the brand palette (no text).

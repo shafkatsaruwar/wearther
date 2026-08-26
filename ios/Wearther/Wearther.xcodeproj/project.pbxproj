@@ -35,8 +35,11 @@
 		AA000001000000000000001B /* SweataWeathaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000022 /* SweataWeathaView.swift */; };
 		AA000001000000000000001C /* TomorrowPlanButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000023 /* TomorrowPlanButton.swift */; };
 		AA0000010000000000000014 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000014 /* Assets.xcassets */; };
-		AA000001000000000000001D /* Fraunces.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000024 /* Fraunces.ttf */; };
-		AA000001000000000000001E /* Outfit.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000025 /* Outfit.ttf */; };
+		AA000001000000000000001D /* PlayfairDisplay-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000024 /* PlayfairDisplay-Regular.ttf */; };
+		AA000001000000000000001E /* PlayfairDisplay-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000025 /* PlayfairDisplay-SemiBold.ttf */; };
+		AA000001000000000000001F /* Literata-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000026 /* Literata-Regular.ttf */; };
+		AA0000010000000000000020 /* Literata-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000027 /* Literata-Medium.ttf */; };
+		AA0000010000000000000021 /* Literata-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000028 /* Literata-SemiBold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -67,8 +70,11 @@
 		AA0001010000000000000021 /* SweataWeatha.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SweataWeatha.swift; sourceTree = "<group>"; };
 		AA0001010000000000000022 /* SweataWeathaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SweataWeathaView.swift; sourceTree = "<group>"; };
 		AA0001010000000000000023 /* TomorrowPlanButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TomorrowPlanButton.swift; sourceTree = "<group>"; };
-		AA0001010000000000000024 /* Fraunces.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Fraunces.ttf; sourceTree = "<group>"; };
-		AA0001010000000000000025 /* Outfit.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Outfit.ttf; sourceTree = "<group>"; };
+		AA0001010000000000000024 /* PlayfairDisplay-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlayfairDisplay-Regular.ttf"; sourceTree = "<group>"; };
+		AA0001010000000000000025 /* PlayfairDisplay-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "PlayfairDisplay-SemiBold.ttf"; sourceTree = "<group>"; };
+		AA0001010000000000000026 /* Literata-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Literata-Regular.ttf"; sourceTree = "<group>"; };
+		AA0001010000000000000027 /* Literata-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Literata-Medium.ttf"; sourceTree = "<group>"; };
+		AA0001010000000000000028 /* Literata-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Literata-SemiBold.ttf"; sourceTree = "<group>"; };
 		AA0001010000000000000014 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA0001010000000000000015 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AA0002010000000000000001 /* Wearther.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wearther.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -189,8 +195,11 @@
 		AA000401000000000000000A /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
-				AA0001010000000000000024 /* Fraunces.ttf */,
-				AA0001010000000000000025 /* Outfit.ttf */,
+				AA0001010000000000000024 /* PlayfairDisplay-Regular.ttf */,
+				AA0001010000000000000025 /* PlayfairDisplay-SemiBold.ttf */,
+				AA0001010000000000000026 /* Literata-Regular.ttf */,
+				AA0001010000000000000027 /* Literata-Medium.ttf */,
+				AA0001010000000000000028 /* Literata-SemiBold.ttf */,
 			);
 			path = Fonts;
 			sourceTree = "<group>";
@@ -254,8 +263,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA0000010000000000000014 /* Assets.xcassets in Resources */,
-				AA000001000000000000001D /* Fraunces.ttf in Resources */,
-				AA000001000000000000001E /* Outfit.ttf in Resources */,
+				AA000001000000000000001D /* PlayfairDisplay-Regular.ttf in Resources */,
+				AA000001000000000000001E /* PlayfairDisplay-SemiBold.ttf in Resources */,
+				AA000001000000000000001F /* Literata-Regular.ttf in Resources */,
+				AA0000010000000000000020 /* Literata-Medium.ttf in Resources */,
+				AA0000010000000000000021 /* Literata-SemiBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

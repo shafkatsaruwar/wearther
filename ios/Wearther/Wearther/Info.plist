@@ -46,8 +46,11 @@
 	<string></string>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Fonts/Fraunces.ttf</string>
-		<string>Fonts/Outfit.ttf</string>
+		<string>PlayfairDisplay-Regular.ttf</string>
+		<string>PlayfairDisplay-SemiBold.ttf</string>
+		<string>Literata-Regular.ttf</string>
+		<string>Literata-Medium.ttf</string>
+		<string>Literata-SemiBold.ttf</string>
 	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
