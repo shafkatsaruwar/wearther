@@ -61,11 +61,7 @@ struct HomeView: View {
         HourlyForecastView(hours: weather.hourly, comfort: viewModel.comfort)
 
         if let tomorrow = weather.tomorrow, let tomorrowOutfit = viewModel.tomorrowOutfit {
-            Rectangle()
-                .fill(AppTheme.line)
-                .frame(height: 1)
-
-            TomorrowPlanView(
+            TomorrowPlanButton(
                 forecast: tomorrow,
                 outfit: tomorrowOutfit,
                 sweataWeatha: viewModel.sweataWeathaTomorrow
