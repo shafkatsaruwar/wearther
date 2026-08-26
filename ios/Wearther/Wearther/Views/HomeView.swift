@@ -3,64 +3,71 @@ import SwiftUI
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
 
+    private let sidePadding: CGFloat = 24
+
     var body: some View {
-        ZStack {
-            AtmosphereBackground()
+        ScrollView(.vertical, showsIndicators: false) {
+            VStack(alignment: .leading, spacing: 28) {
+                header
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    header
-                        .padding(.bottom, 8)
-
-                    if viewModel.isLoading {
-                        loadingPlaceholder
-                            .padding(.top, 48)
-                    } else if let weather = viewModel.weather, let outfit = viewModel.outfit {
-                        content(weather: weather, outfit: outfit)
-                            .padding(.top, 24)
-                    } else if let error = viewModel.errorMessage {
-                        Text(error)
-                            .font(.body)
-                            .foregroundStyle(AppTheme.inkMuted)
-                            .frame(maxWidth: .infinity)
-                            .padding(.top, 64)
-                    }
+                if viewModel.isLoading {
+                    loadingPlaceholder
+                } else if let weather = viewModel.weather, let outfit = viewModel.outfit {
+                    content(weather: weather, outfit: outfit)
+                } else if let error = viewModel.errorMessage {
+                    Text(error)
+                        .font(AppTheme.body)
+                        .foregroundStyle(AppTheme.inkMuted)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, 48)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 48)
             }
+            .padding(.horizontal, sidePadding)
+            .padding(.top, 12)
+            .padding(.bottom, 48)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .background {
+            AtmosphereBackground()
         }
         .task { viewModel.onAppear() }
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("Wearther")
-                .font(.system(size: 28, weight: .semibold, design: .serif))
-                .foregroundStyle(AppTheme.ink)
-
-            CitySearchView(viewModel: viewModel)
-                .padding(.top, 20)
-        }
+        CitySearchView(viewModel: viewModel)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 
+    @ViewBuilder
     private func content(weather: WeatherData, outfit: OutfitRecommendation) -> some View {
-        VStack(alignment: .leading, spacing: 40) {
-            WeatherSummaryView(weather: weather, dateLabel: viewModel.dateLabel)
+        WeatherSummaryView(weather: weather, dateLabel: viewModel.dateLabel)
 
-            Divider()
-                .overlay(AppTheme.line)
+        Rectangle()
+            .fill(AppTheme.line)
+            .frame(height: 1)
 
-            OutfitCardView(outfit: outfit)
+        if let moment = viewModel.sweataWeathaToday {
+            SweataWeathaView(moment: moment)
+        }
 
-            HourlyForecastView(hours: weather.hourly, comfort: viewModel.comfort)
+        OutfitCardView(outfit: outfit)
 
-            ComfortFeedbackView(
-                lastFeedback: viewModel.comfort.lastFeedback,
-                onFeedback: viewModel.submitFeedback
+        HourlyForecastView(hours: weather.hourly, comfort: viewModel.comfort)
+
+        if let tomorrow = weather.tomorrow, let tomorrowOutfit = viewModel.tomorrowOutfit {
+            TomorrowPlanButton(
+                forecast: tomorrow,
+                outfit: tomorrowOutfit,
+                sweataWeatha: viewModel.sweataWeathaTomorrow
             )
         }
+
+        ComfortFeedbackView(
+            lastFeedback: viewModel.comfort.lastFeedback,
+            onFeedback: viewModel.submitFeedback
+        )
+
+        NotificationSettingsView(viewModel: viewModel)
     }
 
     private var loadingPlaceholder: some View {
@@ -71,11 +78,12 @@ struct HomeView: View {
             RoundedRectangle(cornerRadius: 8)
                 .fill(AppTheme.surface)
                 .frame(width: 220, height: 16)
-            RoundedRectangle(cornerRadius: 28)
+            RoundedRectangle(cornerRadius: 24)
                 .fill(AppTheme.fitSurface)
+                .frame(maxWidth: .infinity)
                 .frame(height: 220)
-                .padding(.top, 24)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .redacted(reason: .placeholder)
         .shimmering()
     }

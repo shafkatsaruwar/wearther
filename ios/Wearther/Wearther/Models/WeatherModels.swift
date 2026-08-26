@@ -23,6 +23,20 @@ struct WeatherData: Codable, Equatable {
     let hourly: [HourlyWeather]
     let units: String
     let fetchedAt: String
+    let tomorrow: TomorrowForecast?
+}
+
+struct TomorrowForecast: Codable, Equatable {
+    let dateLabel: String
+    let high: Int
+    let low: Int
+    let feelsLike: Int
+    let condition: String
+    let conditionCode: String
+    let humidity: Int
+    let windSpeed: Int
+    let precipitationChance: Int
+    let hourly: [HourlyWeather]
 }
 
 struct LocationResult: Codable, Equatable, Identifiable, Hashable {

@@ -1,6 +1,6 @@
 import Foundation
 
-enum OpenMeteoProvider: WeatherProvider {
+struct OpenMeteoProvider: WeatherProvider {
     static func condition(from code: Int) -> (label: String, key: String) {
         switch code {
         case 0: return ("Clear", "clear")
@@ -22,12 +22,12 @@ enum OpenMeteoProvider: WeatherProvider {
             URLQueryItem(name: "latitude", value: String(lat)),
             URLQueryItem(name: "longitude", value: String(lon)),
             URLQueryItem(name: "current", value: "temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m"),
-            URLQueryItem(name: "hourly", value: "temperature_2m,apparent_temperature,precipitation_probability,weather_code"),
-            URLQueryItem(name: "daily", value: "temperature_2m_max,temperature_2m_min,precipitation_probability_max"),
+            URLQueryItem(name: "hourly", value: "temperature_2m,apparent_temperature,precipitation_probability,weather_code,relative_humidity_2m,wind_speed_10m"),
+            URLQueryItem(name: "daily", value: "temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code"),
             URLQueryItem(name: "temperature_unit", value: "fahrenheit"),
             URLQueryItem(name: "wind_speed_unit", value: "mph"),
             URLQueryItem(name: "timezone", value: "auto"),
-            URLQueryItem(name: "forecast_days", value: "1"),
+            URLQueryItem(name: "forecast_days", value: "2"),
         ]
 
         let (data, response) = try await URLSession.shared.data(from: components.url!)
@@ -50,7 +50,8 @@ enum OpenMeteoProvider: WeatherProvider {
             precipitationChance: decoded.daily.precipitationProbabilityMax.first ?? 0,
             hourly: pickLaterHours(decoded.hourly),
             units: "imperial",
-            fetchedAt: ISO8601DateFormatter().string(from: Date())
+            fetchedAt: ISO8601DateFormatter().string(from: Date()),
+            tomorrow: parseTomorrowForecast(daily: decoded.daily, hourly: decoded.hourly)
         )
     }
 
@@ -128,6 +129,87 @@ enum OpenMeteoProvider: WeatherProvider {
         return results
     }
 
+    private func parseTomorrowForecast(daily: OpenMeteoDaily, hourly: OpenMeteoHourly) -> TomorrowForecast? {
+        guard daily.temperatureMax.count > 1, daily.temperatureMin.count > 1 else { return nil }
+
+        let high = Int(round(daily.temperatureMax[1]))
+        let low = Int(round(daily.temperatureMin[1]))
+        let precip = daily.precipitationProbabilityMax.count > 1
+            ? daily.precipitationProbabilityMax[1]
+            : 0
+
+        let tomorrowHours = pickTomorrowHours(hourly)
+        let middayIndex = findTomorrowHourIndex(hourly, targetHour: 12)
+            ?? findTomorrowHourIndex(hourly, targetHour: 13)
+
+        let feelsLike: Int
+        let humidity: Int
+        let windSpeed: Int
+        let condition: (label: String, key: String)
+
+        if let middayIndex {
+            feelsLike = Int(round(hourly.apparentTemperature[middayIndex]))
+            humidity = Int(round(hourly.humidity[middayIndex] ?? 55))
+            windSpeed = Int(round(hourly.windSpeed[middayIndex] ?? 8))
+            condition = Self.condition(from: hourly.weatherCode[middayIndex])
+        } else if daily.weatherCode.count > 1 {
+            feelsLike = (high + low) / 2
+            humidity = 55
+            windSpeed = 8
+            condition = Self.condition(from: daily.weatherCode[1])
+        } else {
+            feelsLike = (high + low) / 2
+            humidity = 55
+            windSpeed = 8
+            condition = ("Partly Cloudy", "partly-cloudy")
+        }
+
+        let tomorrowDate = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+        let dateLabel = tomorrowDate.formatted(.dateTime.weekday(.wide).month(.wide).day())
+
+        return TomorrowForecast(
+            dateLabel: dateLabel,
+            high: high,
+            low: low,
+            feelsLike: feelsLike,
+            condition: condition.label,
+            conditionCode: condition.key,
+            humidity: humidity,
+            windSpeed: windSpeed,
+            precipitationChance: precip,
+            hourly: tomorrowHours
+        )
+    }
+
+    private func pickTomorrowHours(_ hourly: OpenMeteoHourly) -> [HourlyWeather] {
+        let targetHours = [9, 12, 18]
+        var results: [HourlyWeather] = []
+
+        for target in targetHours {
+            guard let index = findTomorrowHourIndex(hourly, targetHour: target) else { continue }
+            let label = Self.condition(from: hourly.weatherCode[index]).label
+            let timeISO = hourly.time[index]
+            let date = ISO8601DateFormatter().date(from: timeISO) ?? parseDate(timeISO) ?? Date()
+            results.append(HourlyWeather(
+                time: date.ISO8601Format(),
+                temperature: Int(round(hourly.temperature[index])),
+                precipitationChance: hourly.precipitationProbability[index] ?? 0,
+                condition: label,
+                feelsLike: Int(round(hourly.apparentTemperature[index]))
+            ))
+        }
+
+        return results
+    }
+
+    private func findTomorrowHourIndex(_ hourly: OpenMeteoHourly, targetHour: Int) -> Int? {
+        hourly.time.firstIndex { iso in
+            guard let date = ISO8601DateFormatter().date(from: iso) ?? parseDate(iso) else { return false }
+            return Calendar.current.isDateInTomorrow(date)
+                && Calendar.current.component(.hour, from: date) == targetHour
+        }
+    }
+
     private func parseDate(_ iso: String) -> Date? {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -175,11 +257,13 @@ private struct OpenMeteoDaily: Decodable {
     let temperatureMax: [Double]
     let temperatureMin: [Double]
     let precipitationProbabilityMax: [Int]
+    let weatherCode: [Int]
 
     enum CodingKeys: String, CodingKey {
         case temperatureMax = "temperature_2m_max"
         case temperatureMin = "temperature_2m_min"
         case precipitationProbabilityMax = "precipitation_probability_max"
+        case weatherCode = "weather_code"
     }
 }
 
@@ -189,6 +273,8 @@ private struct OpenMeteoHourly: Decodable {
     let apparentTemperature: [Double]
     let precipitationProbability: [Int?]
     let weatherCode: [Int]
+    let humidity: [Double?]
+    let windSpeed: [Double?]
 
     enum CodingKeys: String, CodingKey {
         case time
@@ -196,6 +282,8 @@ private struct OpenMeteoHourly: Decodable {
         case apparentTemperature = "apparent_temperature"
         case precipitationProbability = "precipitation_probability"
         case weatherCode = "weather_code"
+        case humidity = "relative_humidity_2m"
+        case windSpeed = "wind_speed_10m"
     }
 }
 

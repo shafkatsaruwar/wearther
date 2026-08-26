@@ -113,6 +113,41 @@ enum OutfitRecommender {
         return "Heavy coat + layers"
     }
 
+    static func recommendForTomorrow(
+        _ forecast: TomorrowForecast,
+        locationName: String,
+        comfort: ComfortPreference?
+    ) -> OutfitRecommendation {
+        let weather = WeatherData(
+            locationName: locationName,
+            temperature: forecast.feelsLike,
+            feelsLike: forecast.feelsLike,
+            condition: forecast.condition,
+            conditionCode: forecast.conditionCode,
+            high: forecast.high,
+            low: forecast.low,
+            humidity: forecast.humidity,
+            windSpeed: forecast.windSpeed,
+            precipitationChance: forecast.precipitationChance,
+            hourly: forecast.hourly,
+            units: "imperial",
+            fetchedAt: ISO8601DateFormatter().string(from: Date()),
+            tomorrow: nil
+        )
+
+        var recommendation = recommend(.init(weather: weather, comfort: comfort))
+        if !recommendation.explanation.localizedCaseInsensitiveContains("tomorrow") {
+            recommendation = OutfitRecommendation(
+                title: recommendation.title,
+                items: recommendation.items,
+                explanation: "For tomorrow: \(recommendation.explanation)",
+                warmthLevel: recommendation.warmthLevel,
+                bringLater: recommendation.bringLater
+            )
+        }
+        return recommendation
+    }
+
     // MARK: - Private
 
     private static func baseLayer(for temp: Double, humid: Bool) -> BaseLayer {

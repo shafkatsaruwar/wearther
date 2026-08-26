@@ -38,6 +38,8 @@ struct OpenWeatherProvider: WeatherProvider {
             ))
         }
 
+        let tomorrow = parseTomorrowForecast(from: decoded)
+
         return WeatherData(
             locationName: locationName,
             temperature: Int(round(decoded.current.temp)),
@@ -51,8 +53,66 @@ struct OpenWeatherProvider: WeatherProvider {
             precipitationChance: Int(round((decoded.daily.first?.pop ?? 0) * 100)),
             hourly: hourly,
             units: "imperial",
-            fetchedAt: ISO8601DateFormatter().string(from: Date())
+            fetchedAt: ISO8601DateFormatter().string(from: Date()),
+            tomorrow: tomorrow
         )
+    }
+
+    private func parseTomorrowForecast(from decoded: OpenWeatherOneCall) -> TomorrowForecast? {
+        guard decoded.daily.count > 1 else { return nil }
+
+        let day = decoded.daily[1]
+        let high = Int(round(day.temp.max))
+        let low = Int(round(day.temp.min))
+        let precip = Int(round(day.pop * 100))
+        let condition = Self.mapCondition(day.weather.first?.main ?? "Clouds")
+
+        let tomorrowHours = pickTomorrowHours(from: decoded.hourly)
+        let midday = tomorrowHours.first(where: {
+            guard let date = ISO8601DateFormatter().date(from: $0.time) else { return false }
+            return Calendar.current.component(.hour, from: date) == 12
+        }) ?? tomorrowHours.first
+
+        let feelsLike = midday?.feelsLike ?? (high + low) / 2
+        let tomorrowDate = Calendar.current.date(byAdding: .day, value: 1, to: Date()) ?? Date()
+        let dateLabel = tomorrowDate.formatted(.dateTime.weekday(.wide).month(.wide).day())
+
+        return TomorrowForecast(
+            dateLabel: dateLabel,
+            high: high,
+            low: low,
+            feelsLike: feelsLike,
+            condition: condition.label,
+            conditionCode: condition.key,
+            humidity: Int(round(day.humidity ?? 55)),
+            windSpeed: Int(round(day.windSpeed ?? 8)),
+            precipitationChance: precip,
+            hourly: tomorrowHours
+        )
+    }
+
+    private func pickTomorrowHours(from hourly: [OpenWeatherHourly]) -> [HourlyWeather] {
+        let targetHours = [9, 12, 18]
+        var results: [HourlyWeather] = []
+
+        for target in targetHours {
+            guard let match = hourly.first(where: { h in
+                let date = Date(timeIntervalSince1970: h.dt)
+                return Calendar.current.isDateInTomorrow(date)
+                    && Calendar.current.component(.hour, from: date) == target
+            }) else { continue }
+
+            let c = Self.mapCondition(match.weather.first?.main ?? "Clouds")
+            results.append(HourlyWeather(
+                time: Date(timeIntervalSince1970: match.dt).ISO8601Format(),
+                temperature: Int(round(match.temp)),
+                precipitationChance: Int(round(match.pop * 100)),
+                condition: c.label,
+                feelsLike: Int(round(match.feelsLike))
+            ))
+        }
+
+        return results
     }
 
     func searchLocations(query: String) async throws -> [LocationResult] {
@@ -129,6 +189,14 @@ private struct OpenWeatherHourly: Decodable {
 private struct OpenWeatherDaily: Decodable {
     let temp: OpenWeatherDailyTemp
     let pop: Double
+    let weather: [OpenWeatherCondition]
+    let humidity: Double?
+    let windSpeed: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case temp, pop, weather, humidity
+        case windSpeed = "wind_speed"
+    }
 }
 
 private struct OpenWeatherDailyTemp: Decodable {

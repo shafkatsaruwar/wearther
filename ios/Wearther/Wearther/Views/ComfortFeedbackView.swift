@@ -22,21 +22,23 @@ struct ComfortFeedbackView: View {
                 .overlay(AppTheme.line)
 
             Text("How did this outfit feel?")
-                .font(.subheadline)
+                .font(AppTheme.subheadline)
                 .foregroundStyle(AppTheme.inkMuted)
+                .frame(maxWidth: .infinity, alignment: .center)
 
-            HStack(spacing: 10) {
+            HStack(spacing: 8) {
                 ForEach(options) { opt in
                     let selected = lastFeedback == opt.id
                     Button {
                         onFeedback(opt.id)
                     } label: {
-                        HStack(spacing: 6) {
+                        HStack(spacing: 4) {
                             Text(opt.emoji)
                             Text(opt.label)
-                                .font(.subheadline)
+                                .font(AppTheme.captionMedium)
+                                .lineLimit(1)
                         }
-                        .padding(.horizontal, 16)
+                        .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
                         .background(selected ? AppTheme.ink : AppTheme.surface)
                         .foregroundStyle(selected ? Color.white : AppTheme.inkSoft)
@@ -49,10 +51,11 @@ struct ComfortFeedbackView: View {
                     .buttonStyle(.plain)
                 }
             }
+            .frame(maxWidth: .infinity)
 
             if lastFeedback != nil {
                 Text("Saved locally — future fits will adapt slightly.")
-                    .font(.caption2)
+                    .font(AppTheme.caption)
                     .foregroundStyle(AppTheme.inkFaint)
             }
         }
