@@ -42,7 +42,7 @@ struct TomorrowPlanView: View {
             }
 
             OutfitCardView(
-                sectionTitle: "PLAN FOR TOMORROW",
+                sectionTitle: "TOMORROW'S FIT",
                 outfit: outfit
             )
         }
