@@ -20,7 +20,7 @@ struct HomeView: View {
                             .padding(.top, 24)
                     } else if let error = viewModel.errorMessage {
                         Text(error)
-                            .font(.body)
+                            .font(AppFont.subheadline)
                             .foregroundStyle(AppTheme.inkMuted)
                             .frame(maxWidth: .infinity)
                             .padding(.top, 64)
@@ -37,7 +37,7 @@ struct HomeView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("Wearther")
-                .font(.system(size: 28, weight: .semibold, design: .serif))
+                .font(AppFont.appTitle)
                 .foregroundStyle(AppTheme.ink)
 
             CitySearchView(viewModel: viewModel)

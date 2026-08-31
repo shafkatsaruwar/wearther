@@ -7,13 +7,13 @@ struct WeatherSummaryView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(dateLabel)
-                .font(.subheadline)
+                .font(AppFont.subheadline)
                 .foregroundStyle(AppTheme.inkMuted)
                 .padding(.bottom, 24)
 
             HStack(alignment: .top, spacing: 12) {
                 Text("\(weather.temperature)°")
-                    .font(.system(size: 72, weight: .regular, design: .serif))
+                    .font(AppFont.temperature)
                     .foregroundStyle(AppTheme.ink)
                     .minimumScaleFactor(0.7)
                     .lineLimit(1)
@@ -24,12 +24,12 @@ struct WeatherSummaryView: View {
             }
 
             Text("Feels like \(weather.feelsLike)°")
-                .font(.body)
+                .font(AppFont.body)
                 .foregroundStyle(AppTheme.inkSoft)
                 .padding(.top, 12)
 
             Text("\(weather.condition) • Wind \(weather.windSpeed) mph")
-                .font(.subheadline)
+                .font(AppFont.subheadline)
                 .foregroundStyle(AppTheme.inkMuted)
                 .padding(.top, 4)
 
@@ -45,10 +45,10 @@ struct WeatherSummaryView: View {
     private func statBlock(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.caption)
+                .font(AppFont.caption)
                 .foregroundStyle(AppTheme.inkFaint)
             Text(value)
-                .font(.subheadline)
+                .font(AppFont.subheadline)
                 .foregroundStyle(AppTheme.inkSoft)
         }
     }
