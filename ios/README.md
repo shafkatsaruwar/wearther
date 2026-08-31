@@ -30,6 +30,8 @@ open ios/Wearther/Wearther.xcodeproj
 
 Flow: **Weather → OutfitRecommender → feedback → warmthBias → next recommendation**.
 
+Typography matches the web app: **Outfit** (UI/body) and **Fraunces** (display headings), bundled in `Wearther/Fonts/`.
+
 ## Weather API key
 
 In `Wearther/Info.plist`:

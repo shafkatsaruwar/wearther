@@ -40,6 +40,11 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Fonts/Outfit-Variable.ttf</string>
+		<string>Fonts/Fraunces-Variable.ttf</string>
+	</array>
 	<key>WEATHER_PROVIDER</key>
 	<string>open-meteo</string>
 	<key>OPENWEATHER_API_KEY</key>

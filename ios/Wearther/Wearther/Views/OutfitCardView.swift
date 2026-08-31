@@ -6,12 +6,12 @@ struct OutfitCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("TODAY'S FIT")
-                .font(.caption2.weight(.semibold))
+                .font(AppFont.labelCaps)
                 .tracking(2.2)
                 .foregroundStyle(AppTheme.accent)
 
             Text(outfit.title)
-                .font(.system(size: 36, weight: .regular, design: .serif))
+                .font(AppFont.outfitTitle)
                 .foregroundStyle(AppTheme.ink)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 16)
@@ -30,7 +30,7 @@ struct OutfitCardView: View {
                                 ClothingGlyphView(label: item)
                             }
                         Text(item)
-                            .font(.caption2)
+                            .font(AppFont.caption2)
                             .multilineTextAlignment(.center)
                             .foregroundStyle(AppTheme.inkMuted)
                             .frame(maxWidth: 88)
@@ -40,14 +40,14 @@ struct OutfitCardView: View {
             .padding(.top, 28)
 
             Text(outfit.explanation)
-                .font(.body)
+                .font(AppFont.body)
                 .foregroundStyle(AppTheme.inkSoft)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 28)
 
             if let bringLater = outfit.bringLater {
                 Text(bringLater)
-                    .font(.subheadline.weight(.medium))
+                    .font(AppFont.subheadline.weight(.medium))
                     .foregroundStyle(AppTheme.accent)
                     .padding(.top, 16)
             }
