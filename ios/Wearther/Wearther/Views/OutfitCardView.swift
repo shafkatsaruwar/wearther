@@ -47,7 +47,7 @@ struct OutfitCardView: View {
 
             if let bringLater = outfit.bringLater {
                 Text(bringLater)
-                    .font(AppFont.subheadline.weight(.medium))
+                    .font(AppFont.subheadlineMedium)
                     .foregroundStyle(AppTheme.accent)
                     .padding(.top, 16)
             }

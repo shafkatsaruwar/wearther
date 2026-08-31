@@ -7,6 +7,7 @@ struct WeartherApp: App {
             HomeView()
                 .font(AppFont.body)
                 .preferredColorScheme(nil)
+                .onAppear { AppFont.verifyBundledFonts() }
         }
     }
 }

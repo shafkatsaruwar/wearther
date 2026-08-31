@@ -15,7 +15,7 @@ struct CitySearchView: View {
                         .font(AppFont.cityName)
                         .foregroundStyle(AppTheme.ink)
                     Image(systemName: "chevron.down")
-                        .font(AppFont.caption.weight(.semibold))
+                        .font(AppFont.captionSemibold)
                         .foregroundStyle(AppTheme.inkMuted)
                         .padding(.top, 6)
                 }
@@ -63,7 +63,7 @@ struct CitySearchView: View {
                                 } label: {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(loc.name)
-                                            .font(AppFont.subheadline.weight(.medium))
+                                            .font(AppFont.subheadlineMedium)
                                             .foregroundStyle(AppTheme.ink)
                                         Text([loc.region, loc.country].compactMap { $0 }.joined(separator: ", "))
                                             .font(AppFont.caption)

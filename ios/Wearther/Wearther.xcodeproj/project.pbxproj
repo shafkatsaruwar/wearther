@@ -27,8 +27,13 @@
 		AA0000010000000000000012 /* ComfortFeedbackView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000012 /* ComfortFeedbackView.swift */; };
 		AA0000010000000000000013 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000013 /* HomeView.swift */; };
 		AA0000010000000000000014 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000014 /* Assets.xcassets */; };
-		AA0000010000000000000015 /* Outfit-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000016 /* Outfit-Variable.ttf */; };
-		AA0000010000000000000016 /* Fraunces-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000017 /* Fraunces-Variable.ttf */; };
+		AA0000010000000000000015 /* Outfit-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000016 /* Outfit-Regular.ttf */; };
+		AA0000010000000000000016 /* Outfit-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000017 /* Outfit-Medium.ttf */; };
+		AA0000010000000000000018 /* Outfit-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000019 /* Outfit-SemiBold.ttf */; };
+		AA0000010000000000000019 /* Fraunces-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA000101000000000000001A /* Fraunces-Regular.ttf */; };
+		AA000001000000000000001A /* Fraunces-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA000101000000000000001B /* Fraunces-SemiBold.ttf */; };
+		AA000001000000000000001B /* Fraunces-72pt-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA000101000000000000001C /* Fraunces-72pt-Regular.ttf */; };
+		AA000001000000000000001C /* Fraunces-72pt-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA000101000000000000001D /* Fraunces-72pt-SemiBold.ttf */; };
 		AA0000010000000000000017 /* AppFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000018 /* AppFonts.swift */; };
 /* End PBXBuildFile section */
 
@@ -54,8 +59,13 @@
 		AA0001010000000000000013 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		AA0001010000000000000014 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA0001010000000000000015 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		AA0001010000000000000016 /* Outfit-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Outfit-Variable.ttf"; sourceTree = "<group>"; };
-		AA0001010000000000000017 /* Fraunces-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Fraunces-Variable.ttf"; sourceTree = "<group>"; };
+		AA0001010000000000000016 /* Outfit-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Outfit-Regular.ttf"; sourceTree = "<group>"; };
+		AA0001010000000000000017 /* Outfit-Medium.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Outfit-Medium.ttf"; sourceTree = "<group>"; };
+		AA0001010000000000000019 /* Outfit-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Outfit-SemiBold.ttf"; sourceTree = "<group>"; };
+		AA000101000000000000001A /* Fraunces-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Fraunces-Regular.ttf"; sourceTree = "<group>"; };
+		AA000101000000000000001B /* Fraunces-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Fraunces-SemiBold.ttf"; sourceTree = "<group>"; };
+		AA000101000000000000001C /* Fraunces-72pt-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Fraunces-72pt-Regular.ttf"; sourceTree = "<group>"; };
+		AA000101000000000000001D /* Fraunces-72pt-SemiBold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Fraunces-72pt-SemiBold.ttf"; sourceTree = "<group>"; };
 		AA0001010000000000000018 /* AppFonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFonts.swift; sourceTree = "<group>"; };
 		AA0002010000000000000001 /* Wearther.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wearther.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -153,8 +163,13 @@
 		AA000401000000000000000A /* Fonts */ = {
 			isa = PBXGroup;
 			children = (
-				AA0001010000000000000016 /* Outfit-Variable.ttf */,
-				AA0001010000000000000017 /* Fraunces-Variable.ttf */,
+				AA0001010000000000000016 /* Outfit-Regular.ttf */,
+				AA0001010000000000000017 /* Outfit-Medium.ttf */,
+				AA0001010000000000000019 /* Outfit-SemiBold.ttf */,
+				AA000101000000000000001A /* Fraunces-Regular.ttf */,
+				AA000101000000000000001B /* Fraunces-SemiBold.ttf */,
+				AA000101000000000000001C /* Fraunces-72pt-Regular.ttf */,
+				AA000101000000000000001D /* Fraunces-72pt-SemiBold.ttf */,
 			);
 			path = Fonts;
 			sourceTree = "<group>";
@@ -233,8 +248,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA0000010000000000000014 /* Assets.xcassets in Resources */,
-				AA0000010000000000000015 /* Outfit-Variable.ttf in Resources */,
-				AA0000010000000000000016 /* Fraunces-Variable.ttf in Resources */,
+				AA0000010000000000000015 /* Outfit-Regular.ttf in Resources */,
+				AA0000010000000000000016 /* Outfit-Medium.ttf in Resources */,
+				AA0000010000000000000018 /* Outfit-SemiBold.ttf in Resources */,
+				AA0000010000000000000019 /* Fraunces-Regular.ttf in Resources */,
+				AA000001000000000000001A /* Fraunces-SemiBold.ttf in Resources */,
+				AA000001000000000000001B /* Fraunces-72pt-Regular.ttf in Resources */,
+				AA000001000000000000001C /* Fraunces-72pt-SemiBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
