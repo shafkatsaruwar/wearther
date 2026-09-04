@@ -129,12 +129,7 @@ export function HomeScreen() {
       <main className="relative mx-auto flex w-full max-w-lg flex-col px-5 pb-16 pt-10 sm:max-w-xl sm:px-6 sm:pt-14">
         <header className="mb-2 flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <p className="font-display text-2xl tracking-tight text-[var(--ink)] sm:text-3xl">
-              Wearther
-            </p>
-            <div className="mt-5">
-              <CitySearch selected={location} onSelect={handleSelectLocation} />
-            </div>
+            <CitySearch selected={location} onSelect={handleSelectLocation} />
           </div>
         </header>
 
