@@ -32,6 +32,8 @@ Flow: **Weather → OutfitRecommender → feedback → warmthBias → next recom
 
 Typography matches the web app: **Outfit** (UI/body) and **Fraunces** (display headings), bundled in `Wearther/Fonts/`.
 
+Fonts are registered at launch via Core Text. After pulling font changes, run **Product → Clean Build Folder** in Xcode before rebuilding — a simple reload is not enough.
+
 ## Weather API key
 
 In `Wearther/Info.plist`:
