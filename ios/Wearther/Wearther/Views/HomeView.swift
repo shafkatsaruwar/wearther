@@ -56,12 +56,13 @@ struct HomeView: View {
                     }
                 }
             } label: {
-                Text("Customize")
-                    .font(AppFont.subheadline)
-                    .foregroundStyle(AppTheme.inkMuted)
-                    .padding(.top, 10)
+                ScarfToolbarIcon()
+                    .frame(width: 40, height: 40)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Customize preferences")
+            .padding(.top, 2)
         }
     }
 
@@ -128,4 +129,54 @@ private struct ShimmerModifier: ViewModifier {
 
 #Preview {
     HomeView()
+}
+
+private struct ScarfToolbarIcon: View {
+    var body: some View {
+        ScarfShape()
+            .stroke(AppTheme.inkMuted, style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
+            .frame(width: 20, height: 20)
+    }
+}
+
+private struct ScarfShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        let w = rect.width
+        let h = rect.height
+        var path = Path()
+
+        // Collar band
+        path.move(to: CGPoint(x: w * 0.33, y: h * 0.28))
+        path.addQuadCurve(
+            to: CGPoint(x: w * 0.67, y: h * 0.28),
+            control: CGPoint(x: w * 0.5, y: h * 0.02)
+        )
+        path.addLine(to: CGPoint(x: w * 0.67, y: h * 0.38))
+        path.addLine(to: CGPoint(x: w * 0.33, y: h * 0.38))
+        path.closeSubpath()
+
+        // Left tail
+        path.move(to: CGPoint(x: w * 0.33, y: h * 0.38))
+        path.addLine(to: CGPoint(x: w * 0.33, y: h * 0.88))
+        path.addQuadCurve(
+            to: CGPoint(x: w * 0.46, y: h * 0.88),
+            control: CGPoint(x: w * 0.4, y: h * 0.98)
+        )
+        path.addLine(to: CGPoint(x: w * 0.5, y: h * 0.62))
+
+        // Right tail
+        path.move(to: CGPoint(x: w * 0.67, y: h * 0.38))
+        path.addLine(to: CGPoint(x: w * 0.67, y: h * 0.88))
+        path.addQuadCurve(
+            to: CGPoint(x: w * 0.54, y: h * 0.88),
+            control: CGPoint(x: w * 0.6, y: h * 0.98)
+        )
+        path.addLine(to: CGPoint(x: w * 0.5, y: h * 0.62))
+
+        // Cross band
+        path.move(to: CGPoint(x: w * 0.33, y: h * 0.48))
+        path.addLine(to: CGPoint(x: w * 0.67, y: h * 0.48))
+
+        return path
+    }
 }

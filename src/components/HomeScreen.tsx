@@ -148,10 +148,12 @@ export function HomeScreen() {
           <button
             type="button"
             onClick={() => setCustomizeOpen((v) => !v)}
-            className="mt-2 shrink-0 text-sm text-[var(--ink-muted)] transition-colors hover:text-[var(--ink)]"
+            className="mt-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-[var(--ink-muted)] transition-colors hover:bg-[var(--surface)] hover:text-[var(--ink)]"
             aria-expanded={customizeOpen}
+            aria-label="Customize preferences"
+            title="Customize"
           >
-            Customize
+            <ScarfIcon className="h-5 w-5" />
           </button>
         </header>
 
@@ -197,5 +199,24 @@ export function HomeScreen() {
         )}
       </main>
     </div>
+  );
+}
+
+function ScarfIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M8 5.5c0-1.5 1.5-3 4-3s4 1.5 4 3v2.5H8V5.5z" />
+      <path d="M8 8v11.5c0 .8.6 1.5 1.4 1.5.5 0 1-.3 1.2-.7L12 16l1.4 4.3c.2.4.7.7 1.2.7.8 0 1.4-.7 1.4-1.5V8" />
+      <path d="M8 10.5h8" />
+    </svg>
   );
 }
