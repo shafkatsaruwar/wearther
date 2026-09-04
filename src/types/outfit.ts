@@ -23,10 +23,19 @@ export interface OutfitRecommendation {
 
 export type ComfortFeedback = "too_cold" | "perfect" | "too_hot";
 
+export type FeelBaseline = "colder" | "average" | "warmer";
+export type StyleMode = "casual" | "smart_casual" | "athletic" | "formal";
+export type TempUnits = "fahrenheit" | "celsius";
+
+export interface AlwaysPackPrefs {
+  rainJacket: boolean;
+  lightLayer: boolean;
+  scarf: boolean;
+}
+
 /**
- * Comfort bias applied to feels-like temperature (°F).
- * Positive = user runs cold (dress warmer).
- * Negative = user runs hot (dress cooler).
+ * Comfort + style preference store.
+ * Positive warmthBias = user runs cold (dress warmer).
  * Designed to move to a database later without changing call sites.
  */
 export interface ComfortPreference {
@@ -34,4 +43,8 @@ export interface ComfortPreference {
   feedbackCount: number;
   lastFeedback?: ComfortFeedback;
   updatedAt: string;
+  feelBaseline: FeelBaseline;
+  style: StyleMode;
+  alwaysPack: AlwaysPackPrefs;
+  units: TempUnits;
 }

@@ -5,18 +5,45 @@ enum ComfortStore {
     private static let locationKey = "wearther:selected-location"
 
     static func loadComfortPreference() -> ComfortPreference {
-        guard let data = UserDefaults.standard.data(forKey: comfortKey),
-              let parsed = try? JSONDecoder().decode(ComfortPreference.self, from: data)
-        else {
+        guard let data = UserDefaults.standard.data(forKey: comfortKey) else {
             return .default
         }
 
-        return ComfortPreference(
-            warmthBias: clamp(parsed.warmthBias, min: -8, max: 8),
-            feedbackCount: parsed.feedbackCount,
-            lastFeedback: parsed.lastFeedback,
-            updatedAt: parsed.updatedAt
-        )
+        // Prefer full decode; fall back to legacy shape without new fields.
+        if let parsed = try? JSONDecoder().decode(ComfortPreference.self, from: data) {
+            return ComfortPreference(
+                warmthBias: clamp(parsed.warmthBias, min: -8, max: 8),
+                feedbackCount: parsed.feedbackCount,
+                lastFeedback: parsed.lastFeedback,
+                updatedAt: parsed.updatedAt,
+                feelBaseline: parsed.feelBaseline,
+                style: parsed.style,
+                alwaysPack: parsed.alwaysPack,
+                units: parsed.units
+            )
+        }
+
+        struct Legacy: Codable {
+            var warmthBias: Double
+            var feedbackCount: Int
+            var lastFeedback: ComfortFeedback?
+            var updatedAt: String
+        }
+
+        if let legacy = try? JSONDecoder().decode(Legacy.self, from: data) {
+            return ComfortPreference(
+                warmthBias: clamp(legacy.warmthBias, min: -8, max: 8),
+                feedbackCount: legacy.feedbackCount,
+                lastFeedback: legacy.lastFeedback,
+                updatedAt: legacy.updatedAt,
+                feelBaseline: .average,
+                style: .casual,
+                alwaysPack: .default,
+                units: .fahrenheit
+            )
+        }
+
+        return .default
     }
 
     static func saveComfortPreference(_ pref: ComfortPreference) {
@@ -37,12 +64,11 @@ enum ComfortStore {
             if bias < 0 { bias = min(0, bias + 0.5) }
         }
 
-        let next = ComfortPreference(
-            warmthBias: bias,
-            feedbackCount: current.feedbackCount + 1,
-            lastFeedback: feedback,
-            updatedAt: ISO8601DateFormatter().string(from: Date())
-        )
+        var next = current
+        next.warmthBias = bias
+        next.feedbackCount = current.feedbackCount + 1
+        next.lastFeedback = feedback
+        next.updatedAt = ISO8601DateFormatter().string(from: Date())
         saveComfortPreference(next)
         return next
     }
@@ -63,5 +89,21 @@ enum ComfortStore {
 
     private static func clamp(_ value: Double, min: Double, max: Double) -> Double {
         Swift.min(max, Swift.max(min, value))
+    }
+}
+
+enum TemperatureDisplay {
+    static func value(_ fahrenheit: Int, units: TempUnits) -> Int {
+        if units == .celsius {
+            return Int(round(Double(fahrenheit - 32) * 5.0 / 9.0))
+        }
+        return fahrenheit
+    }
+
+    static func wind(_ mph: Int, units: TempUnits) -> String {
+        if units == .celsius {
+            return "\(Int(round(Double(mph) * 1.609))) km/h"
+        }
+        return "\(mph) mph"
     }
 }

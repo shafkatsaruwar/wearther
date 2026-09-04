@@ -1,6 +1,7 @@
 import type { ComfortPreference } from "@/types/outfit";
 import type { HourlyWeather } from "@/types/weather";
 import { recommendForHour } from "@/lib/recommendOutfit";
+import { displayTemp } from "@/lib/units";
 
 interface HourlyForecastProps {
   hours: HourlyWeather[];
@@ -9,6 +10,8 @@ interface HourlyForecastProps {
 
 export function HourlyForecast({ hours, comfort }: HourlyForecastProps) {
   if (!hours.length) return null;
+
+  const units = comfort?.units ?? "fahrenheit";
 
   return (
     <section
@@ -33,11 +36,11 @@ export function HourlyForecast({ hours, comfort }: HourlyForecastProps) {
           return (
             <li
               key={hour.time}
-              className="min-w-[5.75rem] flex-1 rounded-2xl border border-[var(--line)] bg-[var(--surface)] px-3 py-3"
+              className="min-w-[5.75rem] flex-1 rounded-2xl bg-[var(--surface)] px-3 py-3"
             >
               <p className="text-xs text-[var(--ink-muted)]">{label}</p>
               <p className="mt-1 text-lg font-medium text-[var(--ink)]">
-                {hour.temperature}°
+                {displayTemp(hour.temperature, units)}°
               </p>
               <p className="mt-1 text-[11px] leading-snug text-[var(--ink-faint)]">
                 {tip}

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { CitySearch } from "@/components/CitySearch";
 import { ComfortFeedbackBar } from "@/components/ComfortFeedback";
+import { CustomizePanel } from "@/components/CustomizePanel";
 import { HourlyForecast } from "@/components/HourlyForecast";
 import { OutfitCard } from "@/components/OutfitCard";
 import { WeatherSummary } from "@/components/WeatherSummary";
@@ -10,6 +11,7 @@ import {
   applyComfortFeedback,
   DEFAULT_COMFORT,
   loadComfortPreference,
+  saveComfortPreference,
 } from "@/lib/comfort";
 import { recommendOutfit } from "@/lib/recommendOutfit";
 import { loadSavedLocation, saveLocation } from "@/lib/storage";
@@ -52,6 +54,7 @@ export function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [customizeOpen, setCustomizeOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -114,6 +117,17 @@ export function HomeScreen() {
     [comfort, weather],
   );
 
+  const handlePreferenceChange = useCallback(
+    (next: ComfortPreference) => {
+      saveComfortPreference(next);
+      setComfort(next);
+      if (weather) {
+        setOutfit(recommendOutfit({ weather, comfort: next }));
+      }
+    },
+    [weather],
+  );
+
   return (
     <div className="relative min-h-dvh overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-atmosphere" aria-hidden />
@@ -131,7 +145,23 @@ export function HomeScreen() {
           <div className="min-w-0 flex-1">
             <CitySearch selected={location} onSelect={handleSelectLocation} />
           </div>
+          <button
+            type="button"
+            onClick={() => setCustomizeOpen((v) => !v)}
+            className="mt-2 shrink-0 text-sm text-[var(--ink-muted)] transition-colors hover:text-[var(--ink)]"
+            aria-expanded={customizeOpen}
+          >
+            Customize
+          </button>
         </header>
+
+        {customizeOpen && (
+          <CustomizePanel
+            preference={comfort}
+            onChange={handlePreferenceChange}
+            onClose={() => setCustomizeOpen(false)}
+          />
+        )}
 
         {loading && (
           <div className="mt-16 space-y-6 animate-pulse">
@@ -145,9 +175,13 @@ export function HomeScreen() {
           <p className="mt-16 text-center text-[var(--ink-muted)]">{error}</p>
         )}
 
-        {!loading && weather && outfit && (
+        {!loading && weather && outfit && !customizeOpen && (
           <div className="mt-8 flex flex-col gap-10">
-            <WeatherSummary weather={weather} dateLabel={formatDateLabel()} />
+            <WeatherSummary
+              weather={weather}
+              dateLabel={formatDateLabel()}
+              units={comfort.units}
+            />
 
             <div className="h-px w-full bg-[var(--line)]" />
 

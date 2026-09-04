@@ -13,6 +13,7 @@ final class HomeViewModel: ObservableObject {
     @Published var searchResults: [LocationResult] = []
     @Published var isSearching = false
     @Published var isCityPickerOpen = false
+    @Published var isCustomizeOpen = false
 
     private var searchTask: Task<Void, Never>?
     private var loadTask: Task<Void, Never>?
@@ -35,10 +36,6 @@ final class HomeViewModel: ObservableObject {
             let data = await WeatherService.getWeather(for: location)
             guard !Task.isCancelled else { return }
 
-            if data.hourly.isEmpty && data.temperature == 72 {
-                // Possible fallback — still show data
-            }
-
             weather = data
             comfort = ComfortStore.loadComfortPreference()
             outfit = OutfitRecommender.recommend(.init(weather: data, comfort: comfort))
@@ -58,9 +55,36 @@ final class HomeViewModel: ObservableObject {
 
     func submitFeedback(_ feedback: ComfortFeedback) {
         comfort = ComfortStore.applyFeedback(comfort, feedback: feedback)
-        if let weather {
-            outfit = OutfitRecommender.recommend(.init(weather: weather, comfort: comfort))
-        }
+        recomputeOutfit()
+    }
+
+    func updateFeelBaseline(_ value: FeelBaseline) {
+        comfort.feelBaseline = value
+        comfort.updatedAt = ISO8601DateFormatter().string(from: Date())
+        ComfortStore.saveComfortPreference(comfort)
+        recomputeOutfit()
+    }
+
+    func updateStyle(_ value: StyleMode) {
+        comfort.style = value
+        comfort.updatedAt = ISO8601DateFormatter().string(from: Date())
+        ComfortStore.saveComfortPreference(comfort)
+        recomputeOutfit()
+    }
+
+    func updateAlwaysPack(rainJacket: Bool? = nil, lightLayer: Bool? = nil, scarf: Bool? = nil) {
+        if let rainJacket { comfort.alwaysPack.rainJacket = rainJacket }
+        if let lightLayer { comfort.alwaysPack.lightLayer = lightLayer }
+        if let scarf { comfort.alwaysPack.scarf = scarf }
+        comfort.updatedAt = ISO8601DateFormatter().string(from: Date())
+        ComfortStore.saveComfortPreference(comfort)
+        recomputeOutfit()
+    }
+
+    func updateUnits(_ value: TempUnits) {
+        comfort.units = value
+        comfort.updatedAt = ISO8601DateFormatter().string(from: Date())
+        ComfortStore.saveComfortPreference(comfort)
     }
 
     func updateSearchQuery(_ query: String) {
@@ -87,5 +111,11 @@ final class HomeViewModel: ObservableObject {
 
     var dateLabel: String {
         Date().formatted(.dateTime.weekday(.wide).month(.wide).day())
+    }
+
+    private func recomputeOutfit() {
+        if let weather {
+            outfit = OutfitRecommender.recommend(.init(weather: weather, comfort: comfort))
+        }
     }
 }
