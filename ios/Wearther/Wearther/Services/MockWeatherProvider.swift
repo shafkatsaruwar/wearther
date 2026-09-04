@@ -1,6 +1,6 @@
 import Foundation
 
-enum MockWeatherProvider: WeatherProvider {
+struct MockWeatherProvider: WeatherProvider {
     static let defaultCity = LocationResult(
         id: "boston-us",
         name: "Boston",
