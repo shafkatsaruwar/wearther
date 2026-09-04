@@ -9,7 +9,7 @@ struct WeartherApp: App {
     var body: some Scene {
         WindowGroup {
             HomeView()
-                .preferredColorScheme(nil)
+                .preferredColorScheme(.light)
         }
     }
 }
