@@ -41,14 +41,7 @@ struct HomeView: View {
     }
 
     private var header: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("Wearther")
-                .font(AppFont.appTitle)
-                .foregroundStyle(AppTheme.ink)
-
-            CitySearchView(viewModel: viewModel)
-                .padding(.top, 20)
-        }
+        CitySearchView(viewModel: viewModel)
     }
 
     private func content(weather: WeatherData, outfit: OutfitRecommendation) -> some View {
