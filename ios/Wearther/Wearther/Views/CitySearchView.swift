@@ -79,11 +79,9 @@ struct CitySearchView: View {
                     }
                     .frame(maxHeight: 260)
                 }
-                .background(AppTheme.surface)
-                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                .overlay(
+                .background(
                     RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(AppTheme.line, lineWidth: 1)
+                        .fill(AppTheme.surfaceHover)
                 )
                 .padding(.top, 12)
                 .transition(.opacity.combined(with: .move(edge: .top)))

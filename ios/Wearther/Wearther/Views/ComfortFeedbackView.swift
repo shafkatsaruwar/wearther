@@ -19,7 +19,7 @@ struct ComfortFeedbackView: View {
     var body: some View {
         VStack(spacing: 16) {
             Divider()
-                .overlay(AppTheme.line)
+                .background(AppTheme.line)
 
             Text("How did this outfit feel?")
                 .font(AppFont.subheadline)
@@ -38,13 +38,11 @@ struct ComfortFeedbackView: View {
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
-                        .background(selected ? AppTheme.ink : AppTheme.surface)
-                        .foregroundStyle(selected ? Color.white : AppTheme.inkSoft)
-                        .clipShape(Capsule())
-                        .overlay(
+                        .background(
                             Capsule()
-                                .stroke(AppTheme.line, lineWidth: selected ? 0 : 1)
+                                .fill(selected ? AppTheme.ink : AppTheme.surface)
                         )
+                        .foregroundStyle(selected ? Color.white : AppTheme.inkSoft)
                     }
                     .buttonStyle(.plain)
                 }

@@ -27,10 +27,16 @@ struct HomeView: View {
                     }
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 16)
+                .padding(.top, 8)
                 .padding(.bottom, 48)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .scrollContentBackground(.hidden)
+            .scrollIndicators(.hidden)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AppTheme.bgMid.ignoresSafeArea())
+        .preferredColorScheme(.light)
         .task { viewModel.onAppear() }
     }
 
@@ -49,8 +55,9 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 40) {
             WeatherSummaryView(weather: weather, dateLabel: viewModel.dateLabel)
 
-            Divider()
-                .overlay(AppTheme.line)
+            Rectangle()
+                .fill(AppTheme.line)
+                .frame(height: 1)
 
             OutfitCardView(outfit: outfit)
 
@@ -65,13 +72,13 @@ struct HomeView: View {
 
     private var loadingPlaceholder: some View {
         VStack(alignment: .leading, spacing: 16) {
-            RoundedRectangle(cornerRadius: 16)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(AppTheme.surface)
                 .frame(width: 160, height: 80)
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(AppTheme.surface)
                 .frame(width: 220, height: 16)
-            RoundedRectangle(cornerRadius: 28)
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(AppTheme.fitSurface)
                 .frame(height: 220)
                 .padding(.top, 24)

@@ -7,9 +7,9 @@ enum AppTheme {
     static let inkMuted = Color(red: 0.42, green: 0.45, blue: 0.50)
     static let inkFaint = Color(red: 0.60, green: 0.64, blue: 0.68)
     static let line = Color.black.opacity(0.08)
-    static let surface = Color.white.opacity(0.72)
-    static let surfaceHover = Color.white.opacity(0.92)
-    static let fitSurface = Color.white.opacity(0.78)
+    static let surface = Color.white.opacity(0.55)
+    static let surfaceHover = Color.white.opacity(0.85)
+    static let fitSurface = Color.white.opacity(0.62)
     static let fitIconBg = Color.black.opacity(0.04)
     static let bgTop = Color(red: 0.87, green: 0.90, blue: 0.93)
     static let bgMid = Color(red: 0.91, green: 0.93, blue: 0.95)
@@ -24,6 +24,7 @@ struct AtmosphereBackground: View {
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
+
             Circle()
                 .fill(
                     RadialGradient(
@@ -36,6 +37,7 @@ struct AtmosphereBackground: View {
                 .frame(width: 440, height: 440)
                 .offset(x: -120, y: -180)
                 .blur(radius: 40)
+
             Circle()
                 .fill(
                     RadialGradient(
@@ -49,6 +51,7 @@ struct AtmosphereBackground: View {
                 .offset(x: 140, y: 320)
                 .blur(radius: 36)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .ignoresSafeArea()
     }
 }
