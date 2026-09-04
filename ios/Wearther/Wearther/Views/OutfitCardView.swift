@@ -52,9 +52,12 @@ struct OutfitCardView: View {
                     .padding(.top, 16)
             }
         }
-        .padding(28)
+        .padding(.horizontal, 24)
+        .padding(.vertical, 28)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(AppTheme.fitSurface)
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .background(
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(AppTheme.fitSurface)
+        )
     }
 }
