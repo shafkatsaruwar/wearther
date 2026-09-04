@@ -1,9 +1,12 @@
+import CoreText
 import SwiftUI
 import UIKit
 
 /// Typography matching the web app: Outfit (sans) + Fraunces (display).
-/// Uses PostScript names from bundled static TTFs — never chain `.weight()` on
-/// `Font.custom`, or iOS silently falls back to San Francisco.
+///
+/// Fonts are registered at launch via Core Text (not only `UIAppFonts`), because
+/// Xcode copies group resources to the bundle root — so `Fonts/foo.ttf` in
+/// Info.plist often fails to find the file.
 enum AppFont {
     private enum Sans {
         static let regular = "Outfit-Regular"
@@ -16,12 +19,49 @@ enum AppFont {
         static let semibold = "Fraunces72pt-SemiBold"
     }
 
+    private static let bundledFiles = [
+        "Outfit-Regular",
+        "Outfit-Medium",
+        "Outfit-SemiBold",
+        "Fraunces-Regular",
+        "Fraunces-SemiBold",
+        "Fraunces-72pt-Regular",
+        "Fraunces-72pt-SemiBold",
+    ]
+
+    /// Call once before any view that uses these fonts is created.
+    static func registerBundledFonts() {
+        for name in bundledFiles {
+            guard let url = fontURL(named: name) else {
+                print("[Wearther] Font file not found in bundle: \(name).ttf")
+                continue
+            }
+            var error: Unmanaged<CFError>?
+            if !CTFontManagerRegisterFontsForURL(url as CFURL, .process, &error) {
+                // Already registered is fine; anything else is worth logging.
+                if let error {
+                    print("[Wearther] Font register warning for \(name): \(error.takeUnretainedValue())")
+                }
+            }
+        }
+
+        #if DEBUG
+        let required = [Sans.regular, Sans.medium, Sans.semibold, Display.regular, Display.semibold]
+        for name in required {
+            if UIFont(name: name, size: 12) == nil {
+                print("[Wearther] UIFont lookup failed for PostScript name: \(name)")
+                print("[Wearther] Available families: \(UIFont.familyNames.sorted())")
+            }
+        }
+        #endif
+    }
+
     static func sans(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        Font.custom(psName(Sans.self, weight: weight), size: size)
+        uiFont(psName(.sans, weight: weight), size: size)
     }
 
     static func display(_ size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        Font.custom(psName(Display.self, weight: weight), size: size)
+        uiFont(psName(.display, weight: weight), size: size)
     }
 
     static let appTitle = display(28)
@@ -38,27 +78,37 @@ enum AppFont {
     static let caption2 = sans(11)
     static let labelCaps = sans(11, weight: .medium)
 
-    /// Debug helper — call once at launch to verify fonts are in the bundle.
-    static func verifyBundledFonts() {
-        #if DEBUG
-        let required = [
-            Sans.regular, Sans.medium, Sans.semibold,
-            Display.regular, Display.semibold,
-        ]
-        for name in required where UIFont(name: name, size: 12) == nil {
-            assertionFailure("Missing bundled font: \(name)")
-        }
-        #endif
+    private enum FontFamily {
+        case sans, display
     }
 
-    private static func psName(_ family: Any.Type, weight: Font.Weight) -> String {
-        switch weight {
-        case .semibold, .bold, .heavy, .black:
-            return family == Sans.self ? Sans.semibold : Display.semibold
-        case .medium:
-            return family == Sans.self ? Sans.medium : Display.regular
+    private static func psName(_ family: FontFamily, weight: Font.Weight) -> String {
+        switch (family, weight) {
+        case (.sans, .semibold), (.sans, .bold), (.sans, .heavy), (.sans, .black):
+            return Sans.semibold
+        case (.sans, .medium):
+            return Sans.medium
+        case (.sans, _):
+            return Sans.regular
+        case (.display, .semibold), (.display, .bold), (.display, .heavy), (.display, .black):
+            return Display.semibold
         default:
-            return family == Sans.self ? Sans.regular : Display.regular
+            return Display.regular
         }
+    }
+
+    private static func uiFont(_ postScriptName: String, size: CGFloat) -> Font {
+        if let ui = UIFont(name: postScriptName, size: size) {
+            return Font(ui)
+        }
+        // Fallback keeps the app usable if registration failed.
+        return Font.custom(postScriptName, size: size)
+    }
+
+    private static func fontURL(named name: String) -> URL? {
+        if let url = Bundle.main.url(forResource: name, withExtension: "ttf") {
+            return url
+        }
+        return Bundle.main.url(forResource: name, withExtension: "ttf", subdirectory: "Fonts")
     }
 }
