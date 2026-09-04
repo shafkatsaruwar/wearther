@@ -26,7 +26,9 @@ enum OutfitRecommender {
     }
 
     static func recommend(_ input: RecommendInput) -> OutfitRecommendation {
-        let bias = input.comfort?.warmthBias ?? 0
+        let bias = input.comfort?.effectiveWarmthBias ?? 0
+        let style = input.comfort?.style ?? .casual
+        let alwaysPack = input.comfort?.alwaysPack
         let adjustedFeels = Double(input.weather.feelsLike) + bias
 
         let windy = Double(input.weather.windSpeed) >= strongWindMPH
@@ -45,6 +47,7 @@ enum OutfitRecommender {
         var title = base.title
         var warmthLevel = base.warmthLevel
         var reasons = [base.reason]
+        var bringLater = later?.short
 
         if rainy {
             if !items.contains(where: { $0.range(of: "rain|waterproof", options: .regularExpression) != nil }) {
@@ -82,6 +85,20 @@ enum OutfitRecommender {
             reasons.append("Based on your feedback, this leans a bit cooler.")
         }
 
+        applyAlwaysPack(
+            items: &items,
+            title: &title,
+            bringLater: &bringLater,
+            alwaysPack: alwaysPack,
+            reasons: &reasons
+        )
+
+        applyStyle(style, items: &items, title: &title)
+
+        if style != .casual {
+            reasons.append("Styled for a \(style.label.lowercased()) look.")
+        }
+
         let explanation = craftExplanation(
             reasons: reasons,
             weather: input.weather,
@@ -94,26 +111,184 @@ enum OutfitRecommender {
             items: dedupe(items),
             explanation: explanation,
             warmthLevel: warmthLevel,
-            bringLater: later?.short
+            bringLater: bringLater
         )
     }
 
     static func recommendForHour(_ hour: HourlyWeather, comfort: ComfortPreference?) -> String {
-        let bias = comfort?.warmthBias ?? 0
+        let bias = comfort?.effectiveWarmthBias ?? 0
         let t = Double(hour.feelsLike) + bias
         let rainy = Double(hour.precipitationChance) >= highRainChance
 
-        if t >= 85 { return rainy ? "Linen + rain layer" : "Linen / shorts" }
-        if t >= 76 { return rainy ? "Short sleeve + rain jacket" : "Short sleeve" }
-        if t >= 68 { return rainy ? "Light layers + rain jacket" : "Jacket optional" }
-        if t >= 60 { return "Long sleeve" }
-        if t >= 52 { return "Long sleeve + light jacket" }
-        if t >= 42 { return "Sweater + jacket" }
-        if t >= 32 { return "Sweater + coat" }
-        return "Heavy coat + layers"
+        let tip: String
+        if t >= 85 { tip = rainy ? "Linen + rain layer" : "Linen / shorts" }
+        else if t >= 76 { tip = rainy ? "Short sleeve + rain jacket" : "Short sleeve" }
+        else if t >= 68 { tip = rainy ? "Light layers + rain jacket" : "Jacket optional" }
+        else if t >= 60 { tip = "Long sleeve" }
+        else if t >= 52 { tip = "Long sleeve + light jacket" }
+        else if t >= 42 { tip = "Sweater + jacket" }
+        else if t >= 32 { tip = "Sweater + coat" }
+        else { tip = "Heavy coat + layers" }
+
+        return styleHourTip(comfort?.style ?? .casual, tip)
     }
 
-    // MARK: - Private
+    // MARK: - Preferences
+
+    private static func applyAlwaysPack(
+        items: inout [String],
+        title: inout String,
+        bringLater: inout String?,
+        alwaysPack: AlwaysPackPrefs?,
+        reasons: inout [String]
+    ) {
+        guard let alwaysPack else { return }
+
+        if alwaysPack.rainJacket,
+           !items.contains(where: { $0.range(of: "rain|waterproof", options: .regularExpression) != nil }) {
+            items.append("Rain jacket")
+            reasons.append("You asked to always pack a rain jacket.")
+        }
+
+        if alwaysPack.lightLayer {
+            bringLater = bringLater ?? "Bring a light layer for later."
+            if title.range(of: "bring", options: .caseInsensitive) == nil {
+                title = joinTitle(stripBring(title), "Bring a Jacket")
+            }
+            reasons.append("Keeping a light layer handy, as you prefer.")
+        }
+
+        if alwaysPack.scarf,
+           !items.contains(where: { $0.localizedCaseInsensitiveContains("scarf") }) {
+            items.append("Scarf")
+            reasons.append("You asked to always pack a scarf.")
+        }
+    }
+
+    private static func applyStyle(_ style: StyleMode, items: inout [String], title: inout String) {
+        guard style != .casual else { return }
+        items = items.map { styleItem(style, $0) }
+        title = styleTitle(style, title)
+    }
+
+    private static func styleItem(_ style: StyleMode, _ item: String) -> String {
+        let lower = item.lowercased()
+
+        switch style {
+        case .casual:
+            return item
+        case .smartCasual:
+            if lower.contains("linen") && lower.contains("shirt") { return "Linen button-up" }
+            if lower.contains("short sleeve") || lower.contains("lightweight short") { return "Casual button-up" }
+            if lower.contains("long sleeve") { return "Oxford shirt" }
+            if lower.contains("shorts") && !lower.contains("pants") { return "Chinos or tailored shorts" }
+            if lower.contains("jeans") || lower.contains("pants") || lower.contains("chinos") { return "Chinos" }
+            if lower.contains("sneaker") { return "Clean sneakers or loafers" }
+            if lower.contains("light jacket") { return "Unstructured blazer or overshirt" }
+            return item
+        case .athletic:
+            if lower.contains("linen") || lower.contains("short sleeve") || lower.contains("lightweight short") {
+                return "Breathable athletic tee"
+            }
+            if lower.contains("long sleeve") { return "Performance long sleeve" }
+            if lower.contains("sweater") { return "Light training hoodie" }
+            if lower.contains("shorts") { return "Athletic shorts" }
+            if lower.contains("pants") || lower.contains("jeans") || lower.contains("chinos") { return "Joggers" }
+            if lower.contains("sneaker") || lower.contains("shoe") { return "Running shoes" }
+            if lower.contains("rain") { return "Packable rain shell" }
+            if lower.contains("light jacket") { return "Lightweight running jacket" }
+            if lower.contains("coat") || lower.contains("heavy") { return "Insulated training jacket" }
+            return item
+        case .formal:
+            if lower.contains("linen") { return "Dress shirt (light fabric)" }
+            if lower.contains("short sleeve") || lower.contains("lightweight short") { return "Short-sleeve dress shirt" }
+            if lower.contains("long sleeve") || lower.contains("oxford") { return "Dress shirt" }
+            if lower.contains("sweater") { return "Fine-knit sweater" }
+            if lower.contains("shorts") { return "Dress trousers" }
+            if lower.contains("pants") || lower.contains("jeans") || lower.contains("chinos") { return "Dress trousers" }
+            if lower.contains("sneaker") || lower.contains("shoe") { return "Leather shoes" }
+            if lower.contains("light jacket") { return "Blazer" }
+            if lower.contains("rain") { return "Tailored raincoat" }
+            if lower.contains("coat") || lower.contains("heavy") { return "Wool overcoat" }
+            return item
+        }
+    }
+
+    private static func styleTitle(_ style: StyleMode, _ title: String) -> String {
+        var result = title
+        switch style {
+        case .casual:
+            break
+        case .smartCasual:
+            result = result
+                .replacingOccurrences(of: "Short Sleeve or Linen", with: "Button-up", options: .caseInsensitive)
+                .replacingOccurrences(of: "Short Sleeve or Thin Long Sleeve", with: "Button-up or knit", options: .caseInsensitive)
+                .replacingOccurrences(of: "Linen + Shorts", with: "Linen button-up + chinos", options: .caseInsensitive)
+                .replacingOccurrences(of: "Linen or Short Sleeve + Shorts", with: "Button-up + chinos", options: .caseInsensitive)
+                .replacingOccurrences(of: "Linen", with: "Linen button-up", options: .caseInsensitive)
+                .replacingOccurrences(of: "Long Sleeve", with: "Oxford", options: .caseInsensitive)
+                .replacingOccurrences(of: "Light Jacket", with: "Overshirt", options: .caseInsensitive)
+        case .athletic:
+            result = result
+                .replacingOccurrences(of: "Short Sleeve or Linen", with: "Athletic tee", options: .caseInsensitive)
+                .replacingOccurrences(of: "Short Sleeve or Thin Long Sleeve", with: "Performance tee", options: .caseInsensitive)
+                .replacingOccurrences(of: "Linen + Shorts", with: "Tee + athletic shorts", options: .caseInsensitive)
+                .replacingOccurrences(of: "Linen or Short Sleeve + Shorts", with: "Tee + athletic shorts", options: .caseInsensitive)
+                .replacingOccurrences(of: "Linen", with: "Athletic tee", options: .caseInsensitive)
+                .replacingOccurrences(of: "Long Sleeve", with: "Performance top", options: .caseInsensitive)
+                .replacingOccurrences(of: "Light Jacket", with: "Running jacket", options: .caseInsensitive)
+                .replacingOccurrences(of: "Sweater", with: "Hoodie", options: .caseInsensitive)
+                .replacingOccurrences(of: "Heavy Jacket / Coat", with: "Insulated jacket", options: .caseInsensitive)
+                .replacingOccurrences(of: "Heavy Jacket", with: "Insulated jacket", options: .caseInsensitive)
+        case .formal:
+            result = result
+                .replacingOccurrences(of: "Short Sleeve or Linen", with: "Dress shirt", options: .caseInsensitive)
+                .replacingOccurrences(of: "Short Sleeve or Thin Long Sleeve", with: "Dress shirt", options: .caseInsensitive)
+                .replacingOccurrences(of: "Linen + Shorts", with: "Dress shirt + trousers", options: .caseInsensitive)
+                .replacingOccurrences(of: "Linen or Short Sleeve + Shorts", with: "Dress shirt + trousers", options: .caseInsensitive)
+                .replacingOccurrences(of: "Linen", with: "Dress shirt", options: .caseInsensitive)
+                .replacingOccurrences(of: "Long Sleeve", with: "Dress shirt", options: .caseInsensitive)
+                .replacingOccurrences(of: "Light Jacket", with: "Blazer", options: .caseInsensitive)
+                .replacingOccurrences(of: "Sweater", with: "Fine knit", options: .caseInsensitive)
+                .replacingOccurrences(of: "Heavy Jacket / Coat", with: "Overcoat", options: .caseInsensitive)
+                .replacingOccurrences(of: "Heavy Jacket", with: "Overcoat", options: .caseInsensitive)
+                .replacingOccurrences(of: "Winter Coat + Warm Layers", with: "Overcoat + layers", options: .caseInsensitive)
+        }
+        return result
+    }
+
+    private static func styleHourTip(_ style: StyleMode, _ tip: String) -> String {
+        switch style {
+        case .casual:
+            return tip
+        case .smartCasual:
+            return tip
+                .replacingOccurrences(of: "Linen", with: "Button-up", options: .caseInsensitive)
+                .replacingOccurrences(of: "Short sleeve", with: "Button-up", options: .caseInsensitive)
+                .replacingOccurrences(of: "Long sleeve", with: "Oxford", options: .caseInsensitive)
+                .replacingOccurrences(of: "shorts", with: "chinos", options: .caseInsensitive)
+        case .athletic:
+            return tip
+                .replacingOccurrences(of: "Linen", with: "Athletic tee", options: .caseInsensitive)
+                .replacingOccurrences(of: "Short sleeve", with: "Athletic tee", options: .caseInsensitive)
+                .replacingOccurrences(of: "Long sleeve", with: "Perf. top", options: .caseInsensitive)
+                .replacingOccurrences(of: "Jacket optional", with: "Light shell optional", options: .caseInsensitive)
+                .replacingOccurrences(of: "light jacket", with: "running jacket", options: .caseInsensitive)
+                .replacingOccurrences(of: "Sweater", with: "Hoodie", options: .caseInsensitive)
+                .replacingOccurrences(of: "coat", with: "insulated jacket", options: .caseInsensitive)
+        case .formal:
+            return tip
+                .replacingOccurrences(of: "Linen", with: "Dress shirt", options: .caseInsensitive)
+                .replacingOccurrences(of: "Short sleeve", with: "Dress shirt", options: .caseInsensitive)
+                .replacingOccurrences(of: "Long sleeve", with: "Dress shirt", options: .caseInsensitive)
+                .replacingOccurrences(of: "Jacket optional", with: "Blazer optional", options: .caseInsensitive)
+                .replacingOccurrences(of: "light jacket", with: "blazer", options: .caseInsensitive)
+                .replacingOccurrences(of: "Sweater", with: "Fine knit", options: .caseInsensitive)
+                .replacingOccurrences(of: "coat", with: "overcoat", options: .caseInsensitive)
+        }
+    }
+
+    // MARK: - Core engine
 
     private static func baseLayer(for temp: Double, humid: Bool) -> BaseLayer {
         if temp >= 85 {

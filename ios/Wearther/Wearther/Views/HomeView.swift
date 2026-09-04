@@ -12,7 +12,10 @@ struct HomeView: View {
                     header
                         .padding(.bottom, 8)
 
-                    if viewModel.isLoading {
+                    if viewModel.isCustomizeOpen {
+                        CustomizeView(viewModel: viewModel)
+                            .padding(.top, 16)
+                    } else if viewModel.isLoading {
                         loadingPlaceholder
                             .padding(.top, 48)
                     } else if let weather = viewModel.weather, let outfit = viewModel.outfit {
@@ -41,12 +44,34 @@ struct HomeView: View {
     }
 
     private var header: some View {
-        CitySearchView(viewModel: viewModel)
+        HStack(alignment: .top, spacing: 12) {
+            CitySearchView(viewModel: viewModel)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            Button {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    viewModel.isCustomizeOpen.toggle()
+                    if viewModel.isCustomizeOpen {
+                        viewModel.isCityPickerOpen = false
+                    }
+                }
+            } label: {
+                Text("Customize")
+                    .font(AppFont.subheadline)
+                    .foregroundStyle(AppTheme.inkMuted)
+                    .padding(.top, 10)
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     private func content(weather: WeatherData, outfit: OutfitRecommendation) -> some View {
         VStack(alignment: .leading, spacing: 40) {
-            WeatherSummaryView(weather: weather, dateLabel: viewModel.dateLabel)
+            WeatherSummaryView(
+                weather: weather,
+                dateLabel: viewModel.dateLabel,
+                units: viewModel.comfort.units
+            )
 
             Rectangle()
                 .fill(AppTheme.line)

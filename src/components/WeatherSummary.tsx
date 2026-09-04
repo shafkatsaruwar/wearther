@@ -1,12 +1,19 @@
+import type { TempUnits } from "@/types/outfit";
 import type { WeatherData } from "@/types/weather";
 import { WeatherIcon } from "@/components/WeatherIcon";
+import { displayTemp, windLabel } from "@/lib/units";
 
 interface WeatherSummaryProps {
   weather: WeatherData;
   dateLabel: string;
+  units: TempUnits;
 }
 
-export function WeatherSummary({ weather, dateLabel }: WeatherSummaryProps) {
+export function WeatherSummary({
+  weather,
+  dateLabel,
+  units,
+}: WeatherSummaryProps) {
   return (
     <section className="animate-fade-up" style={{ animationDelay: "60ms" }}>
       <p className="mb-6 text-sm tracking-wide text-[var(--ink-muted)]">
@@ -17,7 +24,7 @@ export function WeatherSummary({ weather, dateLabel }: WeatherSummaryProps) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
             <p className="font-display text-7xl leading-none tracking-tight text-[var(--ink)] sm:text-8xl">
-              {weather.temperature}°
+              {displayTemp(weather.temperature, units)}°
             </p>
             <WeatherIcon
               code={weather.conditionCode}
@@ -25,12 +32,12 @@ export function WeatherSummary({ weather, dateLabel }: WeatherSummaryProps) {
             />
           </div>
           <p className="mt-3 text-base text-[var(--ink-soft)]">
-            Feels like {weather.feelsLike}°
+            Feels like {displayTemp(weather.feelsLike, units)}°
           </p>
           <p className="mt-1 text-sm text-[var(--ink-muted)]">
             {weather.condition}
             <span className="mx-1.5 text-[var(--ink-faint)]">•</span>
-            Wind {weather.windSpeed} mph
+            Wind {windLabel(weather.windSpeed, units)}
           </p>
         </div>
       </div>
@@ -39,7 +46,8 @@ export function WeatherSummary({ weather, dateLabel }: WeatherSummaryProps) {
         <div>
           <dt className="text-[var(--ink-faint)]">High / Low</dt>
           <dd className="mt-0.5 text-[var(--ink-soft)]">
-            {weather.high}° / {weather.low}°
+            {displayTemp(weather.high, units)}° /{" "}
+            {displayTemp(weather.low, units)}°
           </dd>
         </div>
         <div>

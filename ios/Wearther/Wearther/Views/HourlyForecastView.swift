@@ -31,7 +31,7 @@ struct HourlyForecastView: View {
             Text(label)
                 .font(AppFont.caption)
                 .foregroundStyle(AppTheme.inkMuted)
-            Text("\(hour.temperature)°")
+            Text("\(TemperatureDisplay.value(hour.temperature, units: comfort.units))°")
                 .font(AppFont.hourlyTemp)
                 .foregroundStyle(AppTheme.ink)
             Text(tip)
