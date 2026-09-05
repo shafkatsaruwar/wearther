@@ -4,14 +4,21 @@ Calm, friendly habit tracker (Expo).
 
 ## App icon
 
-| Asset | Path | Use |
-|-------|------|-----|
-| Master icon | `assets/icon.png` | iOS + Android legacy (1024×1024) |
-| Adaptive foreground | `assets/adaptive-icon.png` | Android adaptive icon (transparent) |
-| Splash | `assets/splash-icon.png` | Splash screen |
-| Favicon | `assets/favicon.png` | Web |
+| Asset | Path | Size | Use |
+|-------|------|------|-----|
+| Master icon | `assets/icon.png` | 1024×1024 | iOS + Android legacy |
+| Adaptive foreground | `assets/adaptive-icon.png` | 1024×1024 (transparent) | Android adaptive icon |
+| Splash | `assets/splash-icon.png` | 1024×1024 | Splash screen |
+| Favicon | `assets/favicon.png` | 48×48 | Web |
 
-Configured in `app.json` for iOS (`ios.icon`) and Android (`android.adaptiveIcon` with background `#E8F0EA`).
+Configured in `app.json`:
+
+- **iOS** — `expo.icon` / `ios.icon` → `./assets/icon.png`
+- **Android** — `android.adaptiveIcon.foregroundImage` + `backgroundColor` `#E8F0EA`
+- **Splash** — soft sage background `#E8F0EA` with centered mark
+- **Web** — `web.favicon`
+
+Mark: open progress ring + check, sage `#4A7868` on mist `#E8F0EA`.
 
 ## Run
 
