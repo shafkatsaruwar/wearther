@@ -50,6 +50,17 @@ struct OpenWeatherProvider: WeatherProvider {
             windSpeed: Int(round(decoded.current.windSpeed)),
             precipitationChance: Int(round((decoded.daily.first?.pop ?? 0) * 100)),
             hourly: hourly,
+            daily: decoded.daily.prefix(7).map { day in
+                let c = Self.mapCondition(day.weather.first?.main ?? "Clouds")
+                return DailyForecast(
+                    date: Date(timeIntervalSince1970: day.dt).ISO8601Format(),
+                    high: Int(round(day.temp.max)),
+                    low: Int(round(day.temp.min)),
+                    precipitationChance: Int(round(day.pop * 100)),
+                    condition: c.label,
+                    conditionCode: c.key
+                )
+            },
             units: "imperial",
             fetchedAt: ISO8601DateFormatter().string(from: Date())
         )
@@ -127,8 +138,10 @@ private struct OpenWeatherHourly: Decodable {
 }
 
 private struct OpenWeatherDaily: Decodable {
+    let dt: TimeInterval
     let temp: OpenWeatherDailyTemp
     let pop: Double
+    let weather: [OpenWeatherCondition]
 }
 
 private struct OpenWeatherDailyTemp: Decodable {

@@ -92,6 +92,10 @@ struct HomeView: View {
 
             HourlyForecastView(hours: weather.hourly, comfort: viewModel.comfort)
 
+            OutlookView(daily: weather.daily, units: viewModel.comfort.units)
+
+            TripPlannerView(viewModel: viewModel)
+
             ComfortFeedbackView(
                 lastFeedback: viewModel.comfort.lastFeedback,
                 onFeedback: viewModel.submitFeedback

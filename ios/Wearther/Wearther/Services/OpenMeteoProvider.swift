@@ -23,11 +23,11 @@ struct OpenMeteoProvider: WeatherProvider {
             URLQueryItem(name: "longitude", value: String(lon)),
             URLQueryItem(name: "current", value: "temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m"),
             URLQueryItem(name: "hourly", value: "temperature_2m,apparent_temperature,precipitation_probability,weather_code"),
-            URLQueryItem(name: "daily", value: "temperature_2m_max,temperature_2m_min,precipitation_probability_max"),
+            URLQueryItem(name: "daily", value: "temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code"),
             URLQueryItem(name: "temperature_unit", value: "fahrenheit"),
             URLQueryItem(name: "wind_speed_unit", value: "mph"),
             URLQueryItem(name: "timezone", value: "auto"),
-            URLQueryItem(name: "forecast_days", value: "1"),
+            URLQueryItem(name: "forecast_days", value: "7"),
         ]
 
         let (data, response) = try await URLSession.shared.data(from: components.url!)
@@ -36,6 +36,7 @@ struct OpenMeteoProvider: WeatherProvider {
 
         let decoded = try JSONDecoder().decode(OpenMeteoForecast.self, from: data)
         let condition = Self.condition(from: decoded.current.weatherCode)
+        let daily = mapDaily(decoded.daily)
 
         return WeatherData(
             locationName: locationName,
@@ -43,12 +44,13 @@ struct OpenMeteoProvider: WeatherProvider {
             feelsLike: Int(round(decoded.current.apparentTemperature)),
             condition: condition.label,
             conditionCode: condition.key,
-            high: Int(round(decoded.daily.temperatureMax.first ?? decoded.current.temperature)),
-            low: Int(round(decoded.daily.temperatureMin.first ?? decoded.current.temperature)),
+            high: daily.first?.high ?? Int(round(decoded.current.temperature)),
+            low: daily.first?.low ?? Int(round(decoded.current.temperature)),
             humidity: Int(round(decoded.current.humidity)),
             windSpeed: Int(round(decoded.current.windSpeed)),
-            precipitationChance: decoded.daily.precipitationProbabilityMax.first ?? 0,
+            precipitationChance: daily.first?.precipitationChance ?? 0,
             hourly: pickLaterHours(decoded.hourly),
+            daily: daily,
             units: "imperial",
             fetchedAt: ISO8601DateFormatter().string(from: Date())
         )
@@ -128,6 +130,27 @@ struct OpenMeteoProvider: WeatherProvider {
         return results
     }
 
+    private func mapDaily(_ daily: OpenMeteoDaily) -> [DailyForecast] {
+        let count = min(
+            daily.time.count,
+            daily.temperatureMax.count,
+            daily.temperatureMin.count,
+            daily.precipitationProbabilityMax.count,
+            daily.weatherCode.count
+        )
+        return (0..<count).map { i in
+            let mapped = Self.condition(from: daily.weatherCode[i])
+            return DailyForecast(
+                date: daily.time[i],
+                high: Int(round(daily.temperatureMax[i])),
+                low: Int(round(daily.temperatureMin[i])),
+                precipitationChance: daily.precipitationProbabilityMax[i],
+                condition: mapped.label,
+                conditionCode: mapped.key
+            )
+        }
+    }
+
     private func parseDate(_ iso: String) -> Date? {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -172,14 +195,18 @@ private struct OpenMeteoCurrent: Decodable {
 }
 
 private struct OpenMeteoDaily: Decodable {
+    let time: [String]
     let temperatureMax: [Double]
     let temperatureMin: [Double]
     let precipitationProbabilityMax: [Int]
+    let weatherCode: [Int]
 
     enum CodingKeys: String, CodingKey {
+        case time
         case temperatureMax = "temperature_2m_max"
         case temperatureMin = "temperature_2m_min"
         case precipitationProbabilityMax = "precipitation_probability_max"
+        case weatherCode = "weather_code"
     }
 }
 

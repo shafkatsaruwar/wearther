@@ -61,6 +61,7 @@ enum WeatherService {
             windSpeed: 9,
             precipitationChance: 10,
             hourly: [],
+            daily: [],
             units: "imperial",
             fetchedAt: ISO8601DateFormatter().string(from: Date())
         )

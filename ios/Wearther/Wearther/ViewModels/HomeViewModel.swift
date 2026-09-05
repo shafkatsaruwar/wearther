@@ -16,7 +16,17 @@ final class HomeViewModel: ObservableObject {
     @Published var isCustomizeOpen = false
     @Published var savedCities: [LocationResult] = []
 
+    @Published var tripDestination: LocationResult?
+    @Published var tripDays = 3
+    @Published var tripSearchQuery = ""
+    @Published var tripSearchResults: [LocationResult] = []
+    @Published var isTripSearching = false
+    @Published var isTripLoading = false
+    @Published var tripPlan: TripPackPlan?
+    @Published var tripError: String?
+
     private var searchTask: Task<Void, Never>?
+    private var tripSearchTask: Task<Void, Never>?
     private var loadTask: Task<Void, Never>?
 
     init() {
@@ -117,6 +127,64 @@ final class HomeViewModel: ObservableObject {
             searchResults = results
             isSearching = false
         }
+    }
+
+    func updateTripSearchQuery(_ query: String) {
+        tripSearchQuery = query
+        tripSearchTask?.cancel()
+        tripPlan = nil
+        tripError = nil
+
+        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.count >= 2 else {
+            tripSearchResults = []
+            isTripSearching = false
+            return
+        }
+
+        tripSearchTask = Task {
+            try? await Task.sleep(nanoseconds: 220_000_000)
+            guard !Task.isCancelled else { return }
+            isTripSearching = true
+            let results = await WeatherService.searchCities(query: trimmed)
+            guard !Task.isCancelled else { return }
+            tripSearchResults = results
+            isTripSearching = false
+        }
+    }
+
+    func selectTripDestination(_ loc: LocationResult) {
+        tripDestination = loc
+        tripSearchQuery = ""
+        tripSearchResults = []
+        tripPlan = nil
+        tripError = nil
+    }
+
+    func clearTripDestination() {
+        tripDestination = nil
+        tripSearchQuery = ""
+        tripSearchResults = []
+        tripPlan = nil
+        tripError = nil
+    }
+
+    func buildTripPlan() async {
+        guard let destination = tripDestination else {
+            tripError = "Pick a destination first."
+            return
+        }
+
+        isTripLoading = true
+        tripError = nil
+        let weather = await WeatherService.getWeather(for: destination)
+        tripPlan = TripPackPlanner.plan(
+            destinationName: destination.name,
+            days: tripDays,
+            daily: weather.daily,
+            comfort: comfort
+        )
+        isTripLoading = false
     }
 
     var dateLabel: String {

@@ -60,9 +60,52 @@ struct MockWeatherProvider: WeatherProvider {
             windSpeed: base.windSpeed,
             precipitationChance: base.precipitationChance,
             hourly: buildHourly(baseTemp: base.temperature, baseFeels: base.feelsLike),
+            daily: buildDaily(
+                high: base.high,
+                low: base.low,
+                precip: base.precipitationChance,
+                condition: base.condition,
+                conditionCode: base.conditionCode
+            ),
             units: "imperial",
             fetchedAt: ISO8601DateFormatter().string(from: Date())
         )
+    }
+
+    private func buildDaily(
+        high: Int,
+        low: Int,
+        precip: Int,
+        condition: String,
+        conditionCode: String
+    ) -> [DailyForecast] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let swings = [0, 3, -2, 5, -4, 2, -1]
+        let precipDelta = [0, 15, -10, 25, 5, -5, 20]
+        let conditions = [
+            (condition, conditionCode),
+            ("Partly Cloudy", "partly-cloudy"),
+            ("Cloudy", "cloudy"),
+            ("Rain", "rain"),
+            ("Clear", "clear"),
+            ("Partly Cloudy", "partly-cloudy"),
+            ("Showers", "rain"),
+        ]
+
+        return (0..<7).compactMap { offset in
+            guard let day = calendar.date(byAdding: .day, value: offset, to: today) else { return nil }
+            let swing = swings[offset]
+            let mapped = conditions[offset]
+            return DailyForecast(
+                date: day.ISO8601Format(),
+                high: high + swing,
+                low: low + swing - 1,
+                precipitationChance: max(0, min(100, precip + precipDelta[offset])),
+                condition: mapped.0,
+                conditionCode: mapped.1
+            )
+        }
     }
 
     private func buildHourly(baseTemp: Int, baseFeels: Int) -> [HourlyWeather] {
