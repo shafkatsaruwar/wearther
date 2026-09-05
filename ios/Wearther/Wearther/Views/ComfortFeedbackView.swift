@@ -6,45 +6,38 @@ struct ComfortFeedbackView: View {
 
     private struct Option: Identifiable {
         let id: ComfortFeedback
-        let emoji: String
         let label: String
+        let primary: Bool
     }
 
     private let options: [Option] = [
-        .init(id: .tooCold, emoji: "🥶", label: "Too Cold"),
-        .init(id: .perfect, emoji: "🙂", label: "Perfect"),
-        .init(id: .tooHot, emoji: "🥵", label: "Too Hot"),
+        .init(id: .tooCold, label: "Too Cold", primary: false),
+        .init(id: .perfect, label: "Perfect", primary: true),
+        .init(id: .tooHot, label: "Too Hot", primary: false),
     ]
 
     var body: some View {
         VStack(spacing: 16) {
-            Divider()
-                .background(AppTheme.line)
-
-            Text("How did this outfit feel?")
-                .font(AppFont.subheadline)
+            Text("HOW WOULD THIS FEEL?")
+                .font(AppFont.labelCaps)
+                .tracking(1.8)
                 .foregroundStyle(AppTheme.inkMuted)
 
-            HStack(spacing: 10) {
+            HStack(spacing: 8) {
                 ForEach(options) { opt in
                     let selected = lastFeedback == opt.id
                     Button {
                         onFeedback(opt.id)
                     } label: {
-                        HStack(spacing: 6) {
-                            Text(opt.emoji)
-                            Text(opt.label)
-                                .font(AppFont.subheadline)
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(
-                            Capsule()
-                                .fill(selected ? AppTheme.ink : AppTheme.surface)
-                        )
-                        .foregroundStyle(selected ? Color.white : AppTheme.inkSoft)
+                        Text(opt.label)
+                            .font(AppFont.subheadlineMedium)
+                            .frame(maxWidth: .infinity)
+                            .frame(minHeight: 44)
+                            .foregroundStyle(foreground(selected: selected, primary: opt.primary))
+                            .background(background(selected: selected, primary: opt.primary))
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(opt.label)
                 }
             }
 
@@ -55,5 +48,25 @@ struct ComfortFeedbackView: View {
             }
         }
         .padding(.top, 8)
+    }
+
+    private func foreground(selected: Bool, primary: Bool) -> Color {
+        if selected { return .white }
+        return primary ? AppTheme.accent : AppTheme.inkSoft
+    }
+
+    @ViewBuilder
+    private func background(selected: Bool, primary: Bool) -> some View {
+        if selected {
+            Capsule().fill(primary ? AppTheme.accent : AppTheme.ink)
+        } else if primary {
+            Capsule()
+                .fill(AppTheme.accent.opacity(0.12))
+                .overlay(Capsule().stroke(AppTheme.accent.opacity(0.28), lineWidth: 1))
+        } else {
+            Capsule()
+                .fill(AppTheme.surface)
+                .overlay(Capsule().stroke(AppTheme.line, lineWidth: 1))
+        }
     }
 }

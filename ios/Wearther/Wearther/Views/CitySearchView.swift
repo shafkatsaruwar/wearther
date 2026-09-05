@@ -14,13 +14,18 @@ struct CitySearchView: View {
                     Text(viewModel.location.name)
                         .font(AppFont.cityName)
                         .foregroundStyle(AppTheme.ink)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                     Image(systemName: "chevron.down")
                         .font(AppFont.captionSemibold)
                         .foregroundStyle(AppTheme.inkMuted)
                         .padding(.top, 6)
                 }
+                .frame(minHeight: 44, alignment: .center)
+                .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Selected city \(viewModel.location.name). Change city")
 
             if viewModel.isCityPickerOpen {
                 VStack(spacing: 0) {

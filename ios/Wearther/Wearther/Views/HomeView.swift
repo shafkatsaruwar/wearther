@@ -17,16 +17,16 @@ struct HomeView: View {
                             .padding(.top, 16)
                     } else if viewModel.isLoading {
                         loadingPlaceholder
-                            .padding(.top, 48)
-                    } else if let weather = viewModel.weather, let outfit = viewModel.outfit {
-                        content(weather: weather, outfit: outfit)
-                            .padding(.top, 24)
-                    } else if let error = viewModel.errorMessage {
+                            .padding(.top, 32)
+                    } else if let error = viewModel.errorMessage, viewModel.weather == nil {
                         Text(error)
                             .font(AppFont.subheadline)
                             .foregroundStyle(AppTheme.inkMuted)
                             .frame(maxWidth: .infinity)
                             .padding(.top, 64)
+                    } else if let weather = viewModel.weather, let outfit = viewModel.outfit {
+                        content(weather: weather, outfit: outfit)
+                            .padding(.top, 20)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -44,7 +44,7 @@ struct HomeView: View {
     }
 
     private var header: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .center, spacing: 12) {
             CitySearchView(viewModel: viewModel)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -56,28 +56,39 @@ struct HomeView: View {
                     }
                 }
             } label: {
-                Text("Customize")
-                    .font(AppFont.subheadline)
-                    .foregroundStyle(AppTheme.inkMuted)
-                    .padding(.top, 10)
+                HStack(spacing: 6) {
+                    Image(systemName: "slider.horizontal.3")
+                        .font(.system(size: 14, weight: .semibold))
+                    Text("Tune")
+                        .font(AppFont.subheadlineMedium)
+                }
+                .foregroundStyle(AppTheme.inkSoft)
+                .padding(.horizontal, 14)
+                .frame(minWidth: 44, minHeight: 44)
+                .background(
+                    Capsule()
+                        .fill(AppTheme.surface)
+                        .overlay(Capsule().stroke(AppTheme.line, lineWidth: 1))
+                )
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Tune preferences")
         }
     }
 
     private func content(weather: WeatherData, outfit: OutfitRecommendation) -> some View {
-        VStack(alignment: .leading, spacing: 40) {
+        let tip = FitCopy.packTip(outfit: outfit, weather: weather)
+
+        return VStack(alignment: .leading, spacing: 28) {
             WeatherSummaryView(
                 weather: weather,
                 dateLabel: viewModel.dateLabel,
-                units: viewModel.comfort.units
+                units: viewModel.comfort.units,
+                packLabel: tip.label,
+                packValue: tip.value
             )
 
-            Rectangle()
-                .fill(AppTheme.line)
-                .frame(height: 1)
-
-            OutfitCardView(outfit: outfit)
+            OutfitCardView(outfit: outfit, comfort: viewModel.comfort)
 
             HourlyForecastView(hours: weather.hourly, comfort: viewModel.comfort)
 
@@ -90,16 +101,22 @@ struct HomeView: View {
 
     private var loadingPlaceholder: some View {
         VStack(alignment: .leading, spacing: 16) {
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(AppTheme.surface)
-                .frame(width: 160, height: 80)
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .fill(AppTheme.surface)
-                .frame(width: 220, height: 16)
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            HStack(alignment: .top, spacing: 12) {
+                RoundedRectangle(cornerRadius: 28, style: .continuous)
+                    .fill(AppTheme.surface)
+                    .frame(height: 160)
+                VStack(spacing: 12) {
+                    ForEach(0..<3, id: \.self) { _ in
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .fill(AppTheme.surface)
+                            .frame(height: 64)
+                    }
+                }
+                .frame(width: 118)
+            }
+            RoundedRectangle(cornerRadius: 30, style: .continuous)
                 .fill(AppTheme.fitSurface)
-                .frame(height: 220)
-                .padding(.top, 24)
+                .frame(height: 260)
         }
         .redacted(reason: .placeholder)
         .shimmering()
