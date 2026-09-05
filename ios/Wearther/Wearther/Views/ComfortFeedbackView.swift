@@ -18,9 +18,6 @@ struct ComfortFeedbackView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Divider()
-                .background(AppTheme.line)
-
             Text("How did this outfit feel?")
                 .font(AppFont.subheadline)
                 .foregroundStyle(AppTheme.inkMuted)

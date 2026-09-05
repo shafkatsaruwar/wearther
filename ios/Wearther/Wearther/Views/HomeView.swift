@@ -66,16 +66,12 @@ struct HomeView: View {
     }
 
     private func content(weather: WeatherData, outfit: OutfitRecommendation) -> some View {
-        VStack(alignment: .leading, spacing: 40) {
+        VStack(alignment: .leading, spacing: 32) {
             WeatherSummaryView(
                 weather: weather,
                 dateLabel: viewModel.dateLabel,
                 units: viewModel.comfort.units
             )
-
-            Rectangle()
-                .fill(AppTheme.line)
-                .frame(height: 1)
 
             OutfitCardView(outfit: outfit)
 

@@ -176,14 +176,12 @@ export function HomeScreen() {
         )}
 
         {!loading && weather && outfit && !customizeOpen && (
-          <div className="mt-8 flex flex-col gap-10">
+          <div className="mt-8 flex flex-col gap-8">
             <WeatherSummary
               weather={weather}
               dateLabel={formatDateLabel()}
               units={comfort.units}
             />
-
-            <div className="h-px w-full bg-[var(--line)]" />
 
             <OutfitCard outfit={outfit} />
 
