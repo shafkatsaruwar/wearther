@@ -9,6 +9,16 @@ struct HourlyWeather: Codable, Equatable, Identifiable {
     let feelsLike: Int
 }
 
+struct DailyForecast: Codable, Equatable, Identifiable {
+    var id: String { date }
+    let date: String
+    let high: Int
+    let low: Int
+    let precipitationChance: Int
+    let condition: String
+    let conditionCode: String
+}
+
 struct WeatherData: Codable, Equatable {
     let locationName: String
     let temperature: Int
@@ -21,8 +31,14 @@ struct WeatherData: Codable, Equatable {
     let windSpeed: Int
     let precipitationChance: Int
     let hourly: [HourlyWeather]
+    let daily: [DailyForecast]
     let units: String
     let fetchedAt: String
+
+    var tomorrow: DailyForecast? {
+        guard daily.count > 1 else { return nil }
+        return daily[1]
+    }
 }
 
 struct LocationResult: Codable, Equatable, Identifiable, Hashable {

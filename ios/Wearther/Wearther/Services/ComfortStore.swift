@@ -3,6 +3,8 @@ import Foundation
 enum ComfortStore {
     private static let comfortKey = "wearther:comfort-preference"
     private static let locationKey = "wearther:selected-location"
+    private static let savedCitiesKey = "wearther:saved-cities"
+    private static let onboardingKey = "wearther:onboarding-complete"
 
     static func loadComfortPreference() -> ComfortPreference {
         guard let data = UserDefaults.standard.data(forKey: comfortKey) else {
@@ -85,6 +87,60 @@ enum ComfortStore {
     static func saveLocation(_ location: LocationResult) {
         guard let data = try? JSONEncoder().encode(location) else { return }
         UserDefaults.standard.set(data, forKey: locationKey)
+    }
+
+    static var hasCompletedOnboarding: Bool {
+        if UserDefaults.standard.object(forKey: onboardingKey) != nil {
+            return UserDefaults.standard.bool(forKey: onboardingKey)
+        }
+        // Existing installs already chose a city — skip first-run onboarding.
+        return UserDefaults.standard.data(forKey: locationKey) != nil
+    }
+
+    static func setOnboardingComplete(_ complete: Bool = true) {
+        UserDefaults.standard.set(complete, forKey: onboardingKey)
+    }
+
+    static func loadSavedCities() -> [LocationResult] {
+        guard let data = UserDefaults.standard.data(forKey: savedCitiesKey),
+              let cities = try? JSONDecoder().decode([LocationResult].self, from: data)
+        else {
+            // Seed with the currently selected city so favorites never start empty.
+            let current = loadSavedLocation()
+            saveSavedCities([current])
+            return [current]
+        }
+        return cities
+    }
+
+    static func saveSavedCities(_ cities: [LocationResult]) {
+        guard let data = try? JSONEncoder().encode(cities) else { return }
+        UserDefaults.standard.set(data, forKey: savedCitiesKey)
+    }
+
+    static func isCitySaved(_ location: LocationResult) -> Bool {
+        loadSavedCities().contains(where: { $0.id == location.id })
+    }
+
+    @discardableResult
+    static func toggleSavedCity(_ location: LocationResult) -> [LocationResult] {
+        var cities = loadSavedCities()
+        if let index = cities.firstIndex(where: { $0.id == location.id }) {
+            cities.remove(at: index)
+        } else {
+            cities.insert(location, at: 0)
+        }
+        saveSavedCities(cities)
+        return cities
+    }
+
+    @discardableResult
+    static func addSavedCity(_ location: LocationResult) -> [LocationResult] {
+        var cities = loadSavedCities()
+        cities.removeAll { $0.id == location.id }
+        cities.insert(location, at: 0)
+        saveSavedCities(cities)
+        return cities
     }
 
     private static func clamp(_ value: Double, min: Double, max: Double) -> Double {
