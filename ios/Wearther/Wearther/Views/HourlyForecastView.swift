@@ -5,19 +5,22 @@ struct HourlyForecastView: View {
     let comfort: ComfortPreference
 
     var body: some View {
-        if hours.isEmpty { EmptyView() } else {
+        if hours.isEmpty {
+            EmptyView()
+        } else {
             VStack(alignment: .leading, spacing: 16) {
                 Text("LATER TODAY")
                     .font(AppFont.labelCaps)
                     .tracking(2.2)
-                    .foregroundStyle(AppTheme.inkFaint)
+                    .foregroundStyle(AppTheme.inkMuted)
 
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 10) {
+                    HStack(spacing: 12) {
                         ForEach(hours) { hour in
                             hourCard(hour)
                         }
                     }
+                    .padding(.horizontal, 2)
                 }
             }
         }
@@ -27,7 +30,7 @@ struct HourlyForecastView: View {
         let tip = OutfitRecommender.recommendForHour(hour, comfort: comfort)
         let label = formattedHour(hour.time)
 
-        return VStack(alignment: .leading, spacing: 4) {
+        return VStack(alignment: .leading, spacing: 6) {
             Text(label)
                 .font(AppFont.caption)
                 .foregroundStyle(AppTheme.inkMuted)
@@ -36,15 +39,12 @@ struct HourlyForecastView: View {
                 .foregroundStyle(AppTheme.ink)
             Text(tip)
                 .font(AppFont.caption2)
-                .foregroundStyle(AppTheme.inkFaint)
+                .foregroundStyle(AppTheme.inkSoft)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .frame(minWidth: 92, alignment: .leading)
-        .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(AppTheme.surface)
-        )
+        .frame(minWidth: 108, alignment: .leading)
+        .padding(14)
+        .cardSurface(radius: 22)
     }
 
     private func formattedHour(_ iso: String) -> String {
