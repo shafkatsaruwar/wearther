@@ -42,7 +42,7 @@ struct HourlyForecastView: View {
         .frame(minWidth: 92, alignment: .leading)
         .padding(12)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(AppTheme.surface)
         )
     }

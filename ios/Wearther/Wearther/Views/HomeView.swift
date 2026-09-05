@@ -4,41 +4,39 @@ struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
 
     var body: some View {
-        ZStack {
-            AtmosphereBackground()
+        ScrollView {
+            VStack(alignment: .leading, spacing: 0) {
+                header
+                    .padding(.bottom, 8)
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    header
-                        .padding(.bottom, 8)
-
-                    if viewModel.isCustomizeOpen {
-                        CustomizeView(viewModel: viewModel)
-                            .padding(.top, 16)
-                    } else if viewModel.isLoading {
-                        loadingPlaceholder
-                            .padding(.top, 48)
-                    } else if let weather = viewModel.weather, let outfit = viewModel.outfit {
-                        content(weather: weather, outfit: outfit)
-                            .padding(.top, 24)
-                    } else if let error = viewModel.errorMessage {
-                        Text(error)
-                            .font(AppFont.subheadline)
-                            .foregroundStyle(AppTheme.inkMuted)
-                            .frame(maxWidth: .infinity)
-                            .padding(.top, 64)
-                    }
+                if viewModel.isCustomizeOpen {
+                    CustomizeView(viewModel: viewModel)
+                        .padding(.top, 16)
+                } else if viewModel.isLoading {
+                    loadingPlaceholder
+                        .padding(.top, 48)
+                } else if let weather = viewModel.weather, let outfit = viewModel.outfit {
+                    content(weather: weather, outfit: outfit)
+                        .padding(.top, 24)
+                } else if let error = viewModel.errorMessage {
+                    Text(error)
+                        .font(AppFont.subheadline)
+                        .foregroundStyle(AppTheme.inkMuted)
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 64)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .padding(.bottom, 48)
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .scrollContentBackground(.hidden)
-            .scrollIndicators(.hidden)
+            .padding(.horizontal, 20)
+            .padding(.top, 8)
+            .padding(.bottom, 48)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .scrollContentBackground(.hidden)
+        .scrollIndicators(.hidden)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AppTheme.bgMid.ignoresSafeArea())
+        .background {
+            AtmosphereBackground()
+        }
         .preferredColorScheme(.light)
         .task { viewModel.onAppear() }
     }
@@ -73,10 +71,6 @@ struct HomeView: View {
                 units: viewModel.comfort.units
             )
 
-            Rectangle()
-                .fill(AppTheme.line)
-                .frame(height: 1)
-
             OutfitCardView(outfit: outfit)
 
             HourlyForecastView(hours: weather.hourly, comfort: viewModel.comfort)
@@ -96,7 +90,7 @@ struct HomeView: View {
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(AppTheme.surface)
                 .frame(width: 220, height: 16)
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(AppTheme.fitSurface)
                 .frame(height: 220)
                 .padding(.top, 24)
