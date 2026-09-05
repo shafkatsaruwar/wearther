@@ -25,7 +25,7 @@ export function ComfortFeedbackBar({
 }: ComfortFeedbackProps) {
   return (
     <section
-      className="animate-fade-up border-t border-[var(--line)] pt-8"
+      className="animate-fade-up pt-2"
       style={{ animationDelay: "280ms" }}
       aria-labelledby="how-feel"
     >
@@ -49,7 +49,7 @@ export function ComfortFeedbackBar({
                 "inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm transition-all duration-200",
                 selected
                   ? "bg-[var(--ink)] text-white dark:text-[#0f1215]"
-                  : "bg-[var(--surface)] text-[var(--ink-soft)] ring-1 ring-[var(--line)] hover:bg-[var(--surface-hover)]",
+                  : "bg-[var(--surface)] text-[var(--ink-soft)] hover:bg-[var(--surface-hover)]",
                 disabled ? "opacity-60" : "",
               ].join(" ")}
             >

@@ -7,9 +7,9 @@
   --ink-muted: #6a7380;
   --ink-faint: #98a2ae;
   --line: rgba(26, 31, 36, 0.08);
-  --surface: rgba(255, 255, 255, 0.72);
-  --surface-hover: rgba(255, 255, 255, 0.92);
-  --fit-surface: rgba(255, 255, 255, 0.78);
+  --surface: rgba(255, 255, 255, 0.5);
+  --surface-hover: rgba(255, 255, 255, 0.85);
+  --fit-surface: rgba(255, 255, 255, 0.58);
   --fit-icon-bg: rgba(26, 31, 36, 0.04);
   --accent: #3d6b5e;
   --glow: rgba(110, 150, 165, 0.32);

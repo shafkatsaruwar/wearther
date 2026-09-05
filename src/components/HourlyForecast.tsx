@@ -36,7 +36,7 @@ export function HourlyForecast({ hours, comfort }: HourlyForecastProps) {
           return (
             <li
               key={hour.time}
-              className="min-w-[5.75rem] flex-1 rounded-2xl bg-[var(--surface)] px-3 py-3"
+              className="min-w-[5.75rem] flex-1 rounded-xl bg-[var(--surface)] px-3 py-3"
             >
               <p className="text-xs text-[var(--ink-muted)]">{label}</p>
               <p className="mt-1 text-lg font-medium text-[var(--ink)]">
