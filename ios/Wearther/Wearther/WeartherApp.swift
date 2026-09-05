@@ -22,6 +22,13 @@ struct WeartherApp: App {
                 }
             }
             .preferredColorScheme(.light)
+            .onOpenURL { url in
+                // Widgets deep-link with wearther://home
+                guard url.scheme == "wearther" else { return }
+                if url.host == "home" || url.path == "/home" {
+                    showOnboarding = false
+                }
+            }
         }
     }
 }
