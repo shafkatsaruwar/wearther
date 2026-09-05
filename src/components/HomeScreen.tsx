@@ -129,7 +129,7 @@ export function HomeScreen() {
   );
 
   return (
-    <div className="relative min-h-dvh overflow-hidden">
+    <div className="relative min-h-dvh overflow-hidden bg-[var(--bg)]">
       <div className="pointer-events-none absolute inset-0 bg-atmosphere" aria-hidden />
       <div
         className="pointer-events-none absolute -left-24 top-[-10%] h-[28rem] w-[28rem] rounded-full bg-[radial-gradient(circle,var(--glow)_0%,transparent_70%)] opacity-70 blur-2xl animate-drift"
@@ -140,7 +140,7 @@ export function HomeScreen() {
         aria-hidden
       />
 
-      <main className="relative mx-auto flex w-full max-w-lg flex-col px-5 pb-16 pt-10 sm:max-w-xl sm:px-6 sm:pt-14">
+      <main className="relative mx-auto flex w-full max-w-lg flex-col px-5 pb-[max(4rem,env(safe-area-inset-bottom))] pt-[max(2.5rem,env(safe-area-inset-top))] sm:max-w-xl sm:px-6 sm:pt-14">
         <header className="mb-2 flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <CitySearch selected={location} onSelect={handleSelectLocation} />
@@ -167,7 +167,7 @@ export function HomeScreen() {
           <div className="mt-16 space-y-6 animate-pulse">
             <div className="h-20 w-40 rounded-2xl bg-[var(--surface)]" />
             <div className="h-4 w-56 rounded bg-[var(--surface)]" />
-            <div className="mt-10 h-56 rounded-[1.75rem] bg-[var(--fit-surface)]" />
+            <div className="mt-10 h-56 rounded-[1.5rem] bg-[var(--fit-surface)]" />
           </div>
         )}
 
@@ -182,8 +182,6 @@ export function HomeScreen() {
               dateLabel={formatDateLabel()}
               units={comfort.units}
             />
-
-            <div className="h-px w-full bg-[var(--line)]" />
 
             <OutfitCard outfit={outfit} />
 

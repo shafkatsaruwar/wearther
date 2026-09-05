@@ -56,7 +56,7 @@ struct OutfitCardView: View {
         .padding(.vertical, 28)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
                 .fill(AppTheme.fitSurface)
         )
     }

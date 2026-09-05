@@ -8,7 +8,7 @@ interface OutfitCardProps {
 export function OutfitCard({ outfit }: OutfitCardProps) {
   return (
     <section
-      className="animate-fade-up rounded-[1.75rem] bg-[var(--fit-surface)] px-6 py-8 sm:px-8 sm:py-10"
+      className="animate-fade-up rounded-[1.5rem] bg-[var(--fit-surface)] px-6 py-8 sm:px-8 sm:py-10"
       style={{ animationDelay: "140ms" }}
       aria-labelledby="todays-fit"
     >
