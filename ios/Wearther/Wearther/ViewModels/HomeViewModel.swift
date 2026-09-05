@@ -14,6 +14,7 @@ final class HomeViewModel: ObservableObject {
     @Published var isSearching = false
     @Published var isCityPickerOpen = false
     @Published var isCustomizeOpen = false
+    @Published var savedCities: [LocationResult] = []
 
     private var searchTask: Task<Void, Never>?
     private var loadTask: Task<Void, Never>?
@@ -21,6 +22,7 @@ final class HomeViewModel: ObservableObject {
     init() {
         location = ComfortStore.loadSavedLocation()
         comfort = ComfortStore.loadComfortPreference()
+        savedCities = ComfortStore.loadSavedCities()
     }
 
     func onAppear() {
@@ -51,6 +53,14 @@ final class HomeViewModel: ObservableObject {
         searchQuery = ""
         searchResults = []
         Task { await refreshWeather() }
+    }
+
+    func isSaved(_ loc: LocationResult) -> Bool {
+        savedCities.contains(where: { $0.id == loc.id })
+    }
+
+    func toggleSavedCity(_ loc: LocationResult) {
+        savedCities = ComfortStore.toggleSavedCity(loc)
     }
 
     func submitFeedback(_ feedback: ComfortFeedback) {

@@ -10,7 +10,7 @@ struct MockWeatherProvider: WeatherProvider {
         longitude: -71.0589
     )
 
-    private static let mockCities: [LocationResult] = [
+    static let suggestedCities: [LocationResult] = [
         defaultCity,
         LocationResult(id: "new-york-us", name: "New York", region: "New York", country: "United States", latitude: 40.7128, longitude: -74.006),
         LocationResult(id: "san-francisco-us", name: "San Francisco", region: "California", country: "United States", latitude: 37.7749, longitude: -122.4194),
@@ -20,6 +20,8 @@ struct MockWeatherProvider: WeatherProvider {
         LocationResult(id: "miami-us", name: "Miami", region: "Florida", country: "United States", latitude: 25.7617, longitude: -80.1918),
         LocationResult(id: "seattle-us", name: "Seattle", region: "Washington", country: "United States", latitude: 47.6062, longitude: -122.3321),
     ]
+
+    private static var mockCities: [LocationResult] { suggestedCities }
 
     func getWeather(lat: Double, lon: Double, locationName: String) async throws -> WeatherData {
         try await Task.sleep(nanoseconds: 280_000_000)
