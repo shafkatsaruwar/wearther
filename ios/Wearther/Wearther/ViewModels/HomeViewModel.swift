@@ -50,7 +50,14 @@ final class HomeViewModel: ObservableObject {
 
             weather = data
             comfort = ComfortStore.loadComfortPreference()
-            outfit = OutfitRecommender.recommend(.init(weather: data, comfort: comfort))
+            let recommendation = OutfitRecommender.recommend(.init(weather: data, comfort: comfort))
+            outfit = recommendation
+            WidgetSnapshotStore.saveFromApp(
+                location: location,
+                weather: data,
+                outfit: recommendation,
+                comfort: comfort
+            )
             isLoading = false
         }
         await loadTask?.value
@@ -193,7 +200,14 @@ final class HomeViewModel: ObservableObject {
 
     private func recomputeOutfit() {
         if let weather {
-            outfit = OutfitRecommender.recommend(.init(weather: weather, comfort: comfort))
+            let recommendation = OutfitRecommender.recommend(.init(weather: weather, comfort: comfort))
+            outfit = recommendation
+            WidgetSnapshotStore.saveFromApp(
+                location: location,
+                weather: weather,
+                outfit: recommendation,
+                comfort: comfort
+            )
         }
     }
 }

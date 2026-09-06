@@ -51,6 +51,10 @@ enum TempUnits: String, Codable, CaseIterable {
     var symbol: String { self == .celsius ? "C" : "F" }
 }
 
+extension TempUnits {
+    var degreeLabel: String { "°\(symbol)" }
+}
+
 struct AlwaysPackPrefs: Codable, Equatable {
     var rainJacket: Bool
     var lightLayer: Bool
