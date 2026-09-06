@@ -42,6 +42,7 @@
 		AA0000010000000000000017 /* AppFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000018 /* AppFonts.swift */; };
 		AA0000010000000000000023 /* FitCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000023 /* FitCopy.swift */; };
 		AA0000010000000000000024 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000024 /* WidgetSnapshot.swift */; };
+		AA0000010000000000000028 /* TemperatureDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000028 /* TemperatureDisplay.swift */; };
 		AA0000010000000000000025 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000025 /* WidgetKit.framework */; };
 		AA0000010000000000000026 /* WeartherWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = WW0002010000000000000001 /* WeartherWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		WW0000010000000000000001 /* WeartherWidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = WW0001010000000000000001 /* WeartherWidgetsBundle.swift */; };
@@ -53,7 +54,7 @@
 		WW0000010000000000000007 /* FitCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000023 /* FitCopy.swift */; };
 		WW0000010000000000000008 /* WeatherModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000002 /* WeatherModels.swift */; };
 		WW0000010000000000000009 /* OutfitModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000003 /* OutfitModels.swift */; };
-		WW000001000000000000000A /* ComfortStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000009 /* ComfortStore.swift */; };
+		WW0000010000000000000012 /* TemperatureDisplay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000028 /* TemperatureDisplay.swift */; };
 		WW000001000000000000000B /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000025 /* WidgetKit.framework */; };
 		WW000001000000000000000C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = WW0001010000000000000006 /* SwiftUI.framework */; };
 		WW000001000000000000000D /* Outfit-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000016 /* Outfit-Regular.ttf */; };
@@ -124,6 +125,7 @@
 		AA0001010000000000000018 /* AppFonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFonts.swift; sourceTree = "<group>"; };
 		AA0001010000000000000023 /* FitCopy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FitCopy.swift; sourceTree = "<group>"; };
 		AA0001010000000000000024 /* WidgetSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetSnapshot.swift; sourceTree = "<group>"; };
+		AA0001010000000000000028 /* TemperatureDisplay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemperatureDisplay.swift; sourceTree = "<group>"; };
 		AA0001010000000000000025 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		AA0001010000000000000027 /* Wearther.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Wearther.entitlements; sourceTree = "<group>"; };
 		AA0002010000000000000001 /* Wearther.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Wearther.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -291,6 +293,7 @@
 			children = (
 				AA0001010000000000000023 /* FitCopy.swift */,
 				AA0001010000000000000024 /* WidgetSnapshot.swift */,
+				AA0001010000000000000028 /* TemperatureDisplay.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -436,6 +439,7 @@
 				AA0000010000000000000017 /* AppFonts.swift in Sources */,
 				AA0000010000000000000023 /* FitCopy.swift in Sources */,
 				AA0000010000000000000024 /* WidgetSnapshot.swift in Sources */,
+				AA0000010000000000000028 /* TemperatureDisplay.swift in Sources */,
 				AA000001000000000000000C /* WeatherIconView.swift in Sources */,
 				AA000001000000000000000D /* ClothingGlyphView.swift in Sources */,
 				AA000001000000000000000E /* CitySearchView.swift in Sources */,
@@ -463,7 +467,7 @@
 				WW0000010000000000000007 /* FitCopy.swift in Sources */,
 				WW0000010000000000000008 /* WeatherModels.swift in Sources */,
 				WW0000010000000000000009 /* OutfitModels.swift in Sources */,
-				WW000001000000000000000A /* ComfortStore.swift in Sources */,
+				WW0000010000000000000012 /* TemperatureDisplay.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
