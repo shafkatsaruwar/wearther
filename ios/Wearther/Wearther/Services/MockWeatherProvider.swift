@@ -1,14 +1,7 @@
 import Foundation
 
 struct MockWeatherProvider: WeatherProvider {
-    static let defaultCity = LocationResult(
-        id: "boston-us",
-        name: "Boston",
-        region: "Massachusetts",
-        country: "United States",
-        latitude: 42.3601,
-        longitude: -71.0589
-    )
+    static let defaultCity = LocationResult.defaultCity
 
     static let suggestedCities: [LocationResult] = [
         defaultCity,

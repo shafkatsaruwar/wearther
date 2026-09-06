@@ -2,7 +2,7 @@ import Foundation
 import WidgetKit
 
 enum WeartherAppGroup {
-    static let id = "group.com.wearther.app"
+    static let id = "group.com.wearther.app.saruwar"
     static let snapshotKey = "wearther:widget-snapshot"
 
     static var defaults: UserDefaults {
