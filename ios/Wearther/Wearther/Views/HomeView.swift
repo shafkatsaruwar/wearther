@@ -2,7 +2,6 @@ import SwiftUI
 
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
-    @State private var showWhy = false
     @State private var selectedItem: ClothingInfo?
 
     var body: some View {
@@ -13,8 +12,8 @@ struct HomeView: View {
                 VStack(spacing: 0) {
                     header
                         .padding(.horizontal, 18)
-                        .padding(.top, 6)
-                        .padding(.bottom, 10)
+                        .padding(.top, 4)
+                        .padding(.bottom, 8)
 
                     if viewModel.isCustomizeOpen {
                         ScrollView {
@@ -28,9 +27,15 @@ struct HomeView: View {
                     } else if let error = viewModel.errorMessage, viewModel.weather == nil {
                         errorState(error)
                     } else if let weather = viewModel.weather, let outfit = viewModel.outfit {
-                        todayBoard(weather: weather, outfit: outfit)
-                            .padding(.horizontal, 16)
-                            .padding(.bottom, 12)
+                        // Canvas spine: one glance, answer first
+                        ScrollView(showsIndicators: false) {
+                            decisionSpine(weather: weather, outfit: outfit)
+                                .padding(.horizontal, 16)
+                                .padding(.bottom, 16)
+                        }
+                        .refreshable {
+                            await viewModel.refreshWeather(showFullLoading: false)
+                        }
                     }
                 }
             }
@@ -41,11 +46,6 @@ struct HomeView: View {
                 ClothingInfoSheet(info: info)
                     .presentationDetents([.medium])
                     .presentationDragIndicator(.visible)
-            }
-            .sheet(isPresented: $showWhy) {
-                if let weather = viewModel.weather, let outfit = viewModel.outfit {
-                    whySheet(weather: weather, outfit: outfit)
-                }
             }
         }
         .preferredColorScheme(.light)
@@ -101,248 +101,300 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - One board (no scroll)
+    // MARK: - Canvas spine
 
-    private func todayBoard(weather: WeatherData, outfit: OutfitRecommendation) -> some View {
-        let packs = FitCopy.packLaneItems(outfit: outfit, weather: weather)
-        let units = viewModel.comfort.units
+    private func decisionSpine(weather: WeatherData, outfit: OutfitRecommendation) -> some View {
         let confidence = FitCopy.confidence(outfit: outfit, weather: weather, comfort: viewModel.comfort)
-        let title = FitCopy.formatTitle(outfit)
+        let units = viewModel.comfort.units
+        let bring = FitCopy.bringSummary(outfit: outfit, weather: weather)
+        let nowLine = FitCopy.nowSummary(items: outfit.items)
 
-        return VStack(alignment: .leading, spacing: 0) {
-            if let locateError = viewModel.locateErrorMessage {
-                HStack(alignment: .top, spacing: 8) {
-                    Text(locateError)
-                        .font(AppFont.caption)
-                        .foregroundStyle(AppTheme.coral)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Spacer(minLength: 0)
-                    Button {
-                        viewModel.locateErrorMessage = nil
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 11, weight: .semibold))
-                            .foregroundStyle(AppTheme.coral.opacity(0.8))
-                            .frame(width: 28, height: 28)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Dismiss")
+        return VStack(alignment: .leading, spacing: 14) {
+            statusBanner
+
+            // Answer first
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(alignment: .center, spacing: 8) {
+                    Text("WEAR THIS TODAY")
+                        .font(AppFont.labelCaps)
+                        .tracking(1.6)
+                        .foregroundStyle(AppTheme.accent)
+
+                    Spacer(minLength: 8)
+
+                    confidencePill(confidence)
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(AppTheme.coral.opacity(0.1))
-                )
-                .padding(.bottom, 10)
-            }
 
-            // Fit
-            HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text(title)
-                    .font(AppFont.display(28))
+                Text(FitCopy.formatTitle(outfit))
+                    .font(AppFont.display(34))
                     .foregroundStyle(AppTheme.ink)
-                    .lineLimit(2)
+                    .lineLimit(3)
                     .minimumScaleFactor(0.78)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Spacer(minLength: 6)
-
-                Text(confidence.rawValue)
-                    .font(AppFont.captionSemibold)
-                    .foregroundStyle(
-                        confidence == .rainRisk || confidence == .eveningDrop
-                            ? AppTheme.coral
-                            : AppTheme.accent
-                    )
-                    .lineLimit(1)
+                Text(FitCopy.decisionSubtitle(outfit: outfit, weather: weather))
+                    .font(AppFont.subheadline)
+                    .foregroundStyle(AppTheme.inkSoft)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
-            Text(FitCopy.shortExplanation(outfit))
-                .font(AppFont.subheadline)
-                .foregroundStyle(AppTheme.inkSoft)
-                .lineLimit(2)
-                .padding(.top, 6)
-
-            // Clothing pieces — clear icon tiles (not tiny truncated chips)
+            // NOW / BRING
             HStack(alignment: .top, spacing: 10) {
-                ForEach(Array(outfit.items.prefix(3)), id: \.self) { item in
-                    let info = ClothingInfoProvider.info(for: item, weather: weather)
-                    Button {
-                        selectedItem = info
-                    } label: {
-                        VStack(spacing: 8) {
-                            ZStack {
-                                Circle()
-                                    .fill(AppTheme.fitIconBg)
-                                    .frame(width: 56, height: 56)
-                                ClothingGlyphView(label: item, size: 22)
-                                    .foregroundStyle(AppTheme.accent)
-                            }
-                            Text(info.name)
-                                .font(AppFont.captionSemibold)
-                                .foregroundStyle(AppTheme.ink)
-                                .multilineTextAlignment(.center)
-                                .lineLimit(2)
-                                .minimumScaleFactor(0.85)
-                            Text(info.subtitle)
-                                .font(AppFont.caption2)
-                                .foregroundStyle(AppTheme.inkMuted)
-                                .multilineTextAlignment(.center)
-                                .lineLimit(1)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Learn about \(info.name)")
-                }
-            }
-            .padding(.top, 16)
+                summaryCard(title: "NOW", body: nowLine)
 
-            // Weather + pack — one quiet block
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 6) {
-                    Text("\(TemperatureDisplay.value(weather.temperature, units: units))° \(weather.condition)")
-                        .font(AppFont.subheadlineMedium)
-                        .foregroundStyle(AppTheme.ink)
-                    Text("·")
-                        .foregroundStyle(AppTheme.inkFaint)
-                    Text("Feels \(TemperatureDisplay.value(weather.feelsLike, units: units))°")
-                        .font(AppFont.caption)
-                        .foregroundStyle(AppTheme.inkMuted)
-                    Spacer(minLength: 0)
-                    Button {
-                        Task { await viewModel.refreshWeather(showFullLoading: false) }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(AppTheme.accent.opacity(0.7))
-                            .rotationEffect(.degrees(viewModel.isRefreshing ? 360 : 0))
-                            .animation(
-                                viewModel.isRefreshing
-                                    ? .linear(duration: 0.8).repeatForever(autoreverses: false)
-                                    : .default,
-                                value: viewModel.isRefreshing
-                            )
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Refresh weather")
-                }
-
-                Text(
-                    "Wind \(TemperatureDisplay.wind(weather.windSpeed, units: units)) · H \(TemperatureDisplay.value(weather.high, units: units))° / L \(TemperatureDisplay.value(weather.low, units: units))°"
-                    + (packs.first.map { " · Pack \($0.lowercased())" } ?? "")
+                summaryCard(
+                    title: "BRING",
+                    body: bring ?? "Travel light"
                 )
-                .font(AppFont.caption)
-                .foregroundStyle(AppTheme.inkMuted)
-                .lineLimit(1)
-                .minimumScaleFactor(0.85)
-
-                if weather.isMock || weather.isStale {
-                    Text(weather.isMock ? "Demo weather" : "Weather may be outdated")
-                        .font(AppFont.caption)
-                        .foregroundStyle(AppTheme.coral)
-                }
-            }
-            .padding(.top, 14)
-
-            // Later + tomorrow — single text strip
-            if !weather.hourly.isEmpty || weather.daily.count > 1 {
-                VStack(alignment: .leading, spacing: 6) {
-                    if !weather.hourly.isEmpty {
-                        Text(laterSummary(hours: weather.hourly, units: units))
-                            .font(AppFont.caption)
-                            .foregroundStyle(AppTheme.inkSoft)
-                            .lineLimit(2)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
-                    if let tomorrow = weather.daily.dropFirst().first {
-                        Text(
-                            "Tomorrow \(TemperatureDisplay.value(tomorrow.high, units: units))°/\(TemperatureDisplay.value(tomorrow.low, units: units))° · \(tomorrow.condition)"
-                        )
-                        .font(AppFont.caption)
-                        .foregroundStyle(AppTheme.inkMuted)
-                        .lineLimit(1)
-                    }
-                }
-                .padding(.top, 10)
             }
 
-            Spacer(minLength: 8)
-
-            // Why + trip — tertiary
-            HStack(spacing: 16) {
-                Button {
-                    showWhy = true
-                } label: {
-                    Text("Why?")
-                        .font(AppFont.subheadlineMedium)
-                        .foregroundStyle(AppTheme.accent)
+            // Plain clothing definitions
+            VStack(spacing: 0) {
+                ForEach(Array(outfit.items.prefix(3).enumerated()), id: \.element) { index, item in
+                    let info = ClothingInfoProvider.info(for: item, weather: weather)
+                    if index > 0 {
+                        Divider().opacity(0.55)
+                    }
+                    clothingRow(info: info, raw: item)
                 }
-                .buttonStyle(.plain)
+            }
+            .padding(.vertical, 4)
 
+            // Weather proof
+            weatherProof(weather: weather, units: units)
+
+            // Trip is separate — one small entry
+            HStack {
+                Text("Planning a trip?")
+                    .font(AppFont.caption)
+                    .foregroundStyle(AppTheme.inkMuted)
+                Spacer(minLength: 8)
                 NavigationLink {
                     TripPackScreen()
                 } label: {
-                    Text("Trip pack")
+                    Text("Open Trip Pack")
                         .font(AppFont.subheadlineMedium)
-                        .foregroundStyle(AppTheme.inkMuted)
+                        .underline()
+                        .foregroundStyle(AppTheme.accent)
                 }
                 .buttonStyle(.plain)
-
-                Spacer(minLength: 0)
             }
-            .padding(.top, 4)
+            .padding(.top, 2)
 
             // Feedback
-            compactFeedback
-                .padding(.top, 12)
+            feedbackBlock
+                .padding(.top, 4)
         }
-        .padding(.horizontal, 18)
-        .padding(.top, 16)
-        .padding(.bottom, 14)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding(.horizontal, 16)
+        .padding(.top, 14)
+        .padding(.bottom, 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(AppTheme.fitSurface)
-                .shadow(color: AppTheme.ink.opacity(0.07), radius: 16, y: 6)
+                .shadow(color: AppTheme.ink.opacity(0.06), radius: 14, y: 6)
         )
     }
 
-    private func whySheet(weather: WeatherData, outfit: OutfitRecommendation) -> some View {
-        NavigationStack {
-            ScrollView {
-                Text(FitCopy.whyDetail(weather: weather, outfit: outfit))
-                    .font(AppFont.body)
-                    .foregroundStyle(AppTheme.inkSoft)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(24)
-            }
-            .background(AppTheme.cream.ignoresSafeArea())
-            .navigationTitle("Why this fit")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { showWhy = false }
+    @ViewBuilder
+    private var statusBanner: some View {
+        if let message = softStatusMessage {
+            HStack(spacing: 8) {
+                Image(systemName: "location.slash")
+                    .font(.system(size: 12, weight: .semibold))
+                Text(message)
+                    .font(AppFont.caption)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+                Button {
+                    viewModel.locateErrorMessage = nil
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 10, weight: .bold))
+                        .frame(width: 24, height: 24)
                 }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Dismiss")
             }
+            .foregroundStyle(AppTheme.coral)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(AppTheme.coral.opacity(0.12))
+            )
         }
-        .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
     }
 
-    private var compactFeedback: some View {
+    private var softStatusMessage: String? {
+        if let err = viewModel.locateErrorMessage, !err.isEmpty {
+            return "Location is off. Showing saved \(viewModel.location.name) weather."
+        }
+        if let weather = viewModel.weather, weather.isMock {
+            return "Demo weather for \(viewModel.location.name)."
+        }
+        return nil
+    }
+
+    private func confidencePill(_ confidence: FitConfidence) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: confidence.systemImage)
+                .font(.system(size: 10, weight: .bold))
+            Text(confidence.rawValue)
+                .font(AppFont.captionSemibold)
+        }
+        .foregroundStyle(
+            confidence == .rainRisk || confidence == .eveningDrop
+                ? AppTheme.coral
+                : AppTheme.accent
+        )
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(
+            Capsule().fill(
+                confidence == .rainRisk || confidence == .eveningDrop
+                    ? AppTheme.coral.opacity(0.14)
+                    : AppTheme.mint
+            )
+        )
+    }
+
+    private func summaryCard(title: String, body: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(AppFont.labelCaps)
+                .tracking(1.2)
+                .foregroundStyle(AppTheme.accent)
+            Text(body)
+                .font(AppFont.subheadlineMedium)
+                .foregroundStyle(AppTheme.ink)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, minHeight: 72, alignment: .topLeading)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(AppTheme.mint.opacity(0.55))
+        )
+    }
+
+    private func clothingRow(info: ClothingInfo, raw: String) -> some View {
+        Button {
+            selectedItem = info
+        } label: {
+            HStack(alignment: .center, spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.fitIconBg)
+                        .frame(width: 40, height: 40)
+                    ClothingGlyphView(label: raw, size: 16)
+                        .foregroundStyle(AppTheme.accent)
+                }
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(info.name)
+                        .font(AppFont.subheadlineMedium)
+                        .foregroundStyle(AppTheme.ink)
+                        .lineLimit(1)
+                    Text(info.subtitle)
+                        .font(AppFont.caption)
+                        .foregroundStyle(AppTheme.inkMuted)
+                        .lineLimit(1)
+                }
+
+                Spacer(minLength: 8)
+
+                Text("What?")
+                    .font(AppFont.captionSemibold)
+                    .foregroundStyle(AppTheme.accent)
+            }
+            .padding(.vertical, 10)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(info.name). What is this?")
+    }
+
+    private func weatherProof(weather: WeatherData, units: TempUnits) -> some View {
+        let slots = weatherSlots(weather: weather, units: units)
+        return HStack(alignment: .top, spacing: 0) {
+            ForEach(Array(slots.enumerated()), id: \.offset) { index, slot in
+                if index > 0 {
+                    Divider()
+                        .frame(height: 44)
+                        .padding(.horizontal, 6)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(slot.label)
+                        .font(AppFont.caption)
+                        .foregroundStyle(AppTheme.inkMuted)
+                    Text(slot.temp)
+                        .font(AppFont.subheadlineMedium)
+                        .foregroundStyle(AppTheme.ink)
+                    Text(slot.tip)
+                        .font(AppFont.caption2)
+                        .foregroundStyle(AppTheme.inkSoft)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            Button {
+                Task { await viewModel.refreshWeather(showFullLoading: false) }
+            } label: {
+                Image(systemName: "arrow.clockwise")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(AppTheme.accent.opacity(0.7))
+                    .frame(width: 28, height: 28)
+            }
+            .buttonStyle(.plain)
+            .disabled(viewModel.isRefreshing)
+            .accessibilityLabel("Refresh weather")
+        }
+        .padding(.vertical, 8)
+    }
+
+    private struct WeatherSlot {
+        let label: String
+        let temp: String
+        let tip: String
+    }
+
+    private func weatherSlots(weather: WeatherData, units: TempUnits) -> [WeatherSlot] {
+        var slots: [WeatherSlot] = [
+            WeatherSlot(
+                label: "Now",
+                temp: "\(TemperatureDisplay.value(weather.temperature, units: units))°",
+                tip: "Feels \(TemperatureDisplay.value(weather.feelsLike, units: units))°"
+            )
+        ]
+
+        for hour in weather.hourly.prefix(2) {
+            let tip = OutfitRecommender.recommendForHour(hour, comfort: viewModel.comfort)
+            slots.append(
+                WeatherSlot(
+                    label: formattedHour(hour.time),
+                    temp: "\(TemperatureDisplay.value(hour.temperature, units: units))°",
+                    tip: tip
+                )
+            )
+        }
+
+        return slots
+    }
+
+    private var feedbackBlock: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("HOW DOES THIS FEEL?")
+            Text("HOW WOULD THIS FEEL?")
                 .font(AppFont.labelCaps)
                 .tracking(1.2)
                 .foregroundStyle(AppTheme.inkMuted)
 
             HStack(spacing: 8) {
-                feedbackChip("Too Cold", id: .tooCold, primary: false)
+                feedbackChip("Too cold", id: .tooCold, primary: false)
                 feedbackChip("Perfect", id: .perfect, primary: true)
-                feedbackChip("Too Hot", id: .tooHot, primary: false)
+                feedbackChip("Too hot", id: .tooHot, primary: false)
             }
 
             if let last = viewModel.comfort.lastFeedback {
@@ -379,14 +431,6 @@ struct HomeView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)
-    }
-
-    private func laterSummary(hours: [HourlyWeather], units: TempUnits) -> String {
-        hours.prefix(3).map { hour in
-            let tip = OutfitRecommender.recommendForHour(hour, comfort: viewModel.comfort)
-            return "\(formattedHour(hour.time)) \(TemperatureDisplay.value(hour.temperature, units: units))° \(tip)"
-        }
-        .joined(separator: "  ·  ")
     }
 
     private func formattedHour(_ iso: String) -> String {

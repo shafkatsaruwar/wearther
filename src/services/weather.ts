@@ -91,35 +91,53 @@ export async function reverseGeocode(
 ): Promise<LocationResult> {
   try {
     const params = new URLSearchParams({
-      latitude: String(latitude),
-      longitude: String(longitude),
-      language: "en",
+      lat: String(latitude),
+      lon: String(longitude),
       format: "json",
-      count: "1",
+      addressdetails: "1",
+      "accept-language": "en",
+      zoom: "10",
     });
     const res = await fetch(
-      `https://geocoding-api.open-meteo.com/v1/reverse?${params}`,
+      `https://nominatim.openstreetmap.org/reverse?${params}`,
+      {
+        headers: {
+          "User-Agent": "Wearther/1.0 (outfit weather app)",
+        },
+      },
     );
     if (res.ok) {
       const data = (await res.json()) as {
-        results?: Array<{
-          id: number;
-          name: string;
-          admin1?: string;
+        address?: {
+          city?: string;
+          town?: string;
+          village?: string;
+          municipality?: string;
+          county?: string;
+          state?: string;
           country?: string;
-          latitude: number;
-          longitude: number;
-        }>;
+        };
       };
-      const first = data.results?.[0];
-      if (first) {
+      const address = data.address;
+      const name =
+        address?.city ||
+        address?.town ||
+        address?.village ||
+        address?.municipality ||
+        address?.county;
+      if (name) {
+        const region = address?.state;
+        const country = address?.country ?? "Unknown";
+        const idSeed = `${name}-${region ?? ""}-${country}`
+          .toLowerCase()
+          .replace(/\s+/g, "-");
         return {
-          id: `near-${first.id}`,
-          name: first.name,
-          region: first.admin1,
-          country: first.country ?? "Unknown",
-          latitude: first.latitude,
-          longitude: first.longitude,
+          id: `here-${idSeed}`,
+          name,
+          region,
+          country,
+          latitude,
+          longitude,
         };
       }
     }

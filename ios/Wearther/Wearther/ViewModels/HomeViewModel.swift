@@ -89,7 +89,16 @@ final class HomeViewModel: ObservableObject {
             do {
                 let place = try await LocationService.shared.locateCurrentPlace()
                 guard !Task.isCancelled else { return }
-                selectLocation(place)
+                // Persist + refresh; city header updates from `location.name`.
+                ComfortStore.saveLocation(place)
+                _ = ComfortStore.addSavedCity(place)
+                savedCities = ComfortStore.loadSavedCities()
+                location = place
+                isCityPickerOpen = false
+                searchQuery = ""
+                searchResults = []
+                locateErrorMessage = nil
+                await refreshWeather(showFullLoading: true)
             } catch {
                 guard !Task.isCancelled else { return }
                 locateErrorMessage = (error as? LocalizedError)?.errorDescription

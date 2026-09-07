@@ -131,6 +131,64 @@ enum FitCopy {
         return first.hasSuffix(".") ? first : "\(first)."
     }
 
+    /// One-glance decision line under the outfit title (canvas: warm now / layer later).
+    static func decisionSubtitle(outfit: OutfitRecommendation, weather: WeatherData) -> String {
+        if let detail = outfit.whyDetail, !detail.isEmpty {
+            let first = detail.split(separator: ".").first.map(String.init)?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            if let first, !first.isEmpty {
+                return first.hasSuffix(".") ? first : "\(first)."
+            }
+        }
+        if outfit.bringLater != nil {
+            return "It is warm now, but you will want a layer after dinner."
+        }
+        if weather.precipitationChance >= 40 {
+            return "Rain is in play — dress for now and keep a shell handy."
+        }
+        return shortExplanation(outfit)
+    }
+
+    /// Short labels for the NOW summary chip (canvas: "Button-up, chinos, sneakers").
+    static func nowSummary(items: [String]) -> String {
+        items.prefix(3).map(shortItemLabel).joined(separator: ", ")
+    }
+
+    static func bringSummary(outfit: OutfitRecommendation, weather: WeatherData) -> String? {
+        let packs = packLaneItems(outfit: outfit, weather: weather)
+        if let first = packs.first {
+            if first.localizedCaseInsensitiveContains("for later") {
+                return first
+            }
+            return "\(first) for later"
+        }
+        if let later = outfit.bringLater {
+            return later
+                .replacingOccurrences(of: #"^bring\s+"#, with: "", options: [.regularExpression, .caseInsensitive])
+                .trimmingCharacters(in: CharacterSet(charactersIn: "."))
+        }
+        return nil
+    }
+
+    static func shortItemLabel(_ item: String) -> String {
+        let lower = item.lowercased()
+        if lower.contains("button") { return "Button-up" }
+        if lower.contains("chino") { return "chinos" }
+        if lower.contains("sneaker") { return "sneakers" }
+        if lower.contains("jean") { return "jeans" }
+        if lower.contains("short") && lower.contains("sleeve") { return "Short sleeve" }
+        if lower.contains("long") && lower.contains("sleeve") { return "Long sleeve" }
+        if lower.contains("jacket") || lower.contains("coat") {
+            return item.replacingOccurrences(of: "Bring a ", with: "", options: .caseInsensitive)
+        }
+        if lower.contains("tee") || lower.contains("t-shirt") { return "Tee" }
+        if lower.contains("hoodie") { return "Hoodie" }
+        if lower.contains("sweater") { return "Sweater" }
+        // First 1–2 words, drop filler.
+        let parts = item.split(separator: " ").prefix(2).map(String.init)
+        return parts.joined(separator: " ")
+    }
+
     static func whyDetail(weather: WeatherData, outfit: OutfitRecommendation) -> String {
         if let detail = outfit.whyDetail, !detail.isEmpty {
             return detail
