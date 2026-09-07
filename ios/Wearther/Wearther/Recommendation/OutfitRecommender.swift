@@ -10,6 +10,7 @@ enum OutfitRecommender {
     struct RecommendInput {
         let weather: WeatherData
         let comfort: ComfortPreference?
+        var occasion: OccasionContext = .everyday
     }
 
     private struct BaseLayer {
@@ -99,6 +100,15 @@ enum OutfitRecommender {
             reasons.append("Styled for a \(style.label.lowercased()) look.")
         }
 
+        applyOccasion(
+            input.occasion,
+            weather: input.weather,
+            items: &items,
+            title: &title,
+            bringLater: &bringLater,
+            reasons: &reasons
+        )
+
         let explanation = craftExplanation(
             reasons: reasons,
             weather: input.weather,
@@ -177,6 +187,177 @@ enum OutfitRecommender {
         guard style != .casual else { return }
         items = items.map { styleItem(style, $0) }
         title = styleTitle(style, title)
+    }
+
+    private static func applyOccasion(
+        _ occasion: OccasionContext,
+        weather: WeatherData,
+        items: inout [String],
+        title: inout String,
+        bringLater: inout String?,
+        reasons: inout [String]
+    ) {
+        guard occasion != .everyday else { return }
+
+        let rainy = Double(weather.precipitationChance) >= highRainChance
+        let hot = Double(weather.feelsLike) >= 76
+        let coolIndoor = Double(weather.feelsLike) >= 70
+
+        if occasion.isCorporate {
+            items = items.map { corporateItem(occasion, $0, rainy: rainy, hot: hot) }
+            title = corporateTitle(occasion, title, rainy: rainy, hot: hot)
+            items.removeAll { $0.range(of: "shorts|sandal|slide|flip.?flop", options: [.regularExpression, .caseInsensitive]) != nil }
+
+            if !items.contains(where: { $0.range(of: "chino|trouser|pant|skirt", options: [.regularExpression, .caseInsensitive]) != nil }) {
+                items.append(occasion == .formal || occasion == .meeting ? "Dress trousers" : "Lightweight chinos")
+            }
+            if !items.contains(where: { $0.range(of: "shirt|button|blouse|knit", options: [.regularExpression, .caseInsensitive]) != nil }) {
+                if hot {
+                    items.insert(occasion == .formal ? "Breathable dress shirt" : "Breathable button-up", at: 0)
+                } else {
+                    items.insert(occasion == .formal ? "Dress shirt" : "Button-up", at: 0)
+                }
+            }
+            if !items.contains(where: { $0.range(of: "loafer|dress shoe|oxford|derby|boot", options: [.regularExpression, .caseInsensitive]) != nil }) {
+                items.append(
+                    rainy
+                        ? "Water-resistant dress shoes"
+                        : (occasion == .office ? "Loafers or clean dress shoes" : "Leather dress shoes")
+                )
+            }
+
+            if coolIndoor,
+               occasion == .office || occasion == .meeting,
+               !items.contains(where: { $0.range(of: "blazer|cardigan|sweater|jacket|coat", options: [.regularExpression, .caseInsensitive]) != nil }) {
+                bringLater = bringLater ?? (occasion == .meeting
+                    ? "Bring an unlined blazer for AC."
+                    : "Bring a light cardigan or unlined blazer for AC.")
+                if title.range(of: "bring|layer|blazer|cardigan", options: [.regularExpression, .caseInsensitive]) == nil {
+                    title = "\(title) + light layer"
+                }
+            }
+
+            if rainy {
+                if !items.contains(where: { $0.localizedCaseInsensitiveContains("umbrella") }) {
+                    items.append("Umbrella")
+                }
+                if !items.contains(where: { $0.range(of: "rain|trench|waterproof", options: [.regularExpression, .caseInsensitive]) != nil }) {
+                    items.append(occasion == .formal ? "Tailored raincoat or trench" : "Clean raincoat")
+                }
+                reasons.append("Use an umbrella or clean raincoat so the outfit stays professional.")
+            }
+
+            if occasion == .office {
+                reasons.append("Warm commute, but offices often run cool, so a light layer is worth bringing.")
+            } else {
+                reasons.append("This keeps the outfit polished while staying breathable for the weather.")
+            }
+        } else if occasion == .remote {
+            items = items.map { remoteItem($0, feelsLike: weather.feelsLike) }
+            title = remoteTitle(feelsLike: weather.feelsLike)
+            reasons.append("Remote day — comfort first, still weather-aware.")
+        } else if occasion == .goingOut {
+            items = items.map(goingOutItem)
+            title = goingOutTitle(title)
+            reasons.append("Going out — a bit more styled, still practical for the weather.")
+        }
+
+        items = dedupe(items)
+    }
+
+    private static func corporateItem(_ occasion: OccasionContext, _ item: String, rainy: Bool, hot: Bool) -> String {
+        let lower = item.lowercased()
+        if lower.contains("shorts"), !lower.contains("pants") {
+            return occasion == .formal || occasion == .meeting ? "Dress trousers" : "Lightweight chinos"
+        }
+        if lower.range(of: "sandal|slide|flip", options: .regularExpression) != nil {
+            return rainy ? "Water-resistant dress shoes" : "Loafers"
+        }
+        if lower.contains("jean") {
+            return occasion == .formal || occasion == .meeting ? "Dress trousers" : "Chinos"
+        }
+        if lower.range(of: "jogger|sweat", options: .regularExpression) != nil {
+            return occasion == .formal ? "Dress trousers" : "Chinos"
+        }
+        if lower.range(of: "hoodie|athletic tee|performance|training tee|tee\\b|t-shirt", options: .regularExpression) != nil {
+            if hot { return occasion == .formal ? "Breathable dress shirt" : "Breathable button-up" }
+            return occasion == .formal ? "Dress shirt" : "Button-up"
+        }
+        if lower.contains("linen"), lower.range(of: "shirt|sleeve", options: .regularExpression) != nil {
+            return hot ? "Breathable button-up" : "Linen button-up"
+        }
+        if lower.contains("short sleeve") {
+            return hot ? "Breathable button-up" : "Casual button-up"
+        }
+        if lower.range(of: "sneaker|running shoe", options: .regularExpression) != nil {
+            if rainy { return "Water-resistant dress shoes" }
+            return occasion == .office ? "Loafers or clean dress shoes" : "Leather dress shoes"
+        }
+        if lower.contains("suede") {
+            return rainy ? "Water-resistant dress shoes" : "Leather dress shoes"
+        }
+        if lower.range(of: "rain jacket|rain shell|packable rain", options: .regularExpression) != nil {
+            return occasion == .formal ? "Tailored raincoat or trench" : "Clean raincoat"
+        }
+        if lower.range(of: "light jacket|overshirt", options: .regularExpression) != nil, !lower.contains("rain"), !lower.contains("blazer") {
+            return occasion == .meeting || occasion == .formal
+                ? "Unlined blazer"
+                : "Unlined blazer or light cardigan"
+        }
+        return item
+    }
+
+    private static func corporateTitle(_ occasion: OccasionContext, _ title: String, rainy: Bool, hot: Bool) -> String {
+        var next = title
+        next = next.replacingOccurrences(of: "shorts", with: occasion == .formal ? "Trousers" : "Chinos", options: .caseInsensitive)
+        next = next.replacingOccurrences(of: #"linen\s*/\s*shorts"#, with: "Breathable button-up", options: [.regularExpression, .caseInsensitive])
+        next = next.replacingOccurrences(of: "short sleeve", with: "Button-up", options: .caseInsensitive)
+        next = next.replacingOccurrences(of: "athletic tee", with: "Button-up", options: .caseInsensitive)
+        if hot, next.range(of: "button|dress shirt|shirt", options: [.regularExpression, .caseInsensitive]) == nil {
+            next = occasion == .formal ? "Dress shirt" : "Button-up + chinos"
+        }
+        if rainy, next.range(of: "rain|trench|umbrella", options: [.regularExpression, .caseInsensitive]) == nil {
+            next = "\(next) + raincoat"
+        }
+        return next
+    }
+
+    private static func remoteItem(_ item: String, feelsLike: Int) -> String {
+        let lower = item.lowercased()
+        if lower.range(of: "dress shirt|oxford|button-up|button up", options: .regularExpression) != nil {
+            return feelsLike >= 72 ? "Soft tee" : "Soft sweater"
+        }
+        if lower.range(of: "chino|trouser|dress pant", options: .regularExpression) != nil {
+            return "Joggers"
+        }
+        if lower.range(of: "loafer|dress shoe|leather shoe|oxford", options: .regularExpression) != nil {
+            return feelsLike < 60 ? "Socks / slippers" : "Comfort sneakers"
+        }
+        if lower.contains("blazer") {
+            return feelsLike < 68 ? "Hoodie or cardigan" : item
+        }
+        return item
+    }
+
+    private static func remoteTitle(feelsLike: Int) -> String {
+        if feelsLike >= 76 { return "Soft tee + joggers" }
+        if feelsLike >= 60 { return "Comfort layers" }
+        return "Soft sweater + joggers"
+    }
+
+    private static func goingOutItem(_ item: String) -> String {
+        let lower = item.lowercased()
+        if lower.range(of: "tee\\b|t-shirt|athletic tee", options: .regularExpression) != nil { return "Nice casual shirt" }
+        if lower.contains("jean") { return "Dark jeans or chinos" }
+        if lower.contains("sneaker") { return "Clean sneakers" }
+        if lower.contains("hoodie") { return "Light overshirt" }
+        return item
+    }
+
+    private static func goingOutTitle(_ title: String) -> String {
+        title
+            .replacingOccurrences(of: "athletic tee", with: "Casual shirt", options: .caseInsensitive)
+            .replacingOccurrences(of: "short sleeve", with: "Casual shirt", options: .caseInsensitive)
     }
 
     private static func styleItem(_ style: StyleMode, _ item: String) -> String {

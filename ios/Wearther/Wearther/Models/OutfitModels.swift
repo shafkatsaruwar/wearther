@@ -44,6 +44,52 @@ enum StyleMode: String, Codable, CaseIterable {
     }
 }
 
+/// Daily work / occasion context — remaps outfits after style without replacing StyleMode.
+enum OccasionContext: String, Codable, CaseIterable, Identifiable {
+    case everyday
+    case office
+    case meeting
+    case formal
+    case remote
+    case goingOut = "going_out"
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .everyday: return "Everyday"
+        case .office: return "Office"
+        case .meeting: return "Meeting"
+        case .formal: return "Formal"
+        case .remote: return "Remote"
+        case .goingOut: return "Going out"
+        }
+    }
+
+    /// Compact home-screen pill copy.
+    var pillLabel: String {
+        switch self {
+        case .office: return "Office day"
+        default: return label
+        }
+    }
+
+    var hint: String {
+        switch self {
+        case .everyday: return "Normal day — weather-first dressing."
+        case .office: return "Corporate office — polished but practical."
+        case .meeting: return "Client day — more conservative and sharp."
+        case .formal: return "Presentation or formal work event."
+        case .remote: return "Work from home — comfort first, still weather-aware."
+        case .goingOut: return "A bit more styled than Everyday."
+        }
+    }
+
+    var isCorporate: Bool {
+        self == .office || self == .meeting || self == .formal
+    }
+}
+
 enum TempUnits: String, Codable, CaseIterable {
     case fahrenheit
     case celsius

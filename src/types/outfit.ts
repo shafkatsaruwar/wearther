@@ -28,6 +28,15 @@ export type FeelBaseline = "colder" | "average" | "warmer";
 export type StyleMode = "casual" | "smart_casual" | "athletic" | "formal";
 export type TempUnits = "fahrenheit" | "celsius";
 
+/** Daily work / occasion context — remaps outfits after style, without replacing StyleMode. */
+export type OccasionContext =
+  | "everyday"
+  | "office"
+  | "meeting"
+  | "formal"
+  | "remote"
+  | "going_out";
+
 export type FitConfidence =
   | "Confident"
   | "Bring backup"

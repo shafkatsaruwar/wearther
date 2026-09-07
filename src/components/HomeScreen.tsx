@@ -22,6 +22,12 @@ import {
   updatedLabel,
   whyDetail,
 } from "@/lib/fitCopy";
+import {
+  loadOccasionContext,
+  occasionPillLabel,
+  OCCASION_OPTIONS,
+  saveOccasionContext,
+} from "@/lib/occasion";
 import { recommendOutfit } from "@/lib/recommendOutfit";
 import {
   hasCompletedOnboarding,
@@ -32,6 +38,7 @@ import { DEFAULT_CITY } from "@/services/weather";
 import type {
   ComfortFeedback,
   ComfortPreference,
+  OccasionContext,
   OutfitRecommendation,
 } from "@/types/outfit";
 import type { LocationResult, WeatherData } from "@/types/weather";
@@ -64,6 +71,8 @@ export function HomeScreen() {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [outfit, setOutfit] = useState<OutfitRecommendation | null>(null);
   const [comfort, setComfort] = useState<ComfortPreference>(DEFAULT_COMFORT);
+  const [occasion, setOccasion] = useState<OccasionContext>("everyday");
+  const [occasionOpen, setOccasionOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [locating, setLocating] = useState(false);
@@ -74,12 +83,15 @@ export function HomeScreen() {
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [, startTransition] = useTransition();
 
-  const applyWeather = useCallback((data: WeatherData, pref: ComfortPreference) => {
-    setWeather(data);
-    setComfort(pref);
-    setOutfit(recommendOutfit({ weather: data, comfort: pref }));
-    setError(null);
-  }, []);
+  const applyWeather = useCallback(
+    (data: WeatherData, pref: ComfortPreference, ctx: OccasionContext) => {
+      setWeather(data);
+      setComfort(pref);
+      setOutfit(recommendOutfit({ weather: data, comfort: pref, occasion: ctx }));
+      setError(null);
+    },
+    [],
+  );
 
   const loadWeather = useCallback(
     async (loc: LocationResult, mode: "full" | "soft") => {
@@ -88,7 +100,9 @@ export function HomeScreen() {
       try {
         const data = await fetchWeather(loc);
         const pref = loadComfortPreference();
-        applyWeather(data, pref);
+        const ctx = loadOccasionContext();
+        setOccasion(ctx);
+        applyWeather(data, pref, ctx);
       } catch {
         setError("Couldn’t load weather. Try another city.");
         if (mode === "full") {
@@ -119,14 +133,16 @@ export function HomeScreen() {
 
       const loc = loadSavedLocation();
       const pref = loadComfortPreference();
+      const ctx = loadOccasionContext();
       setLocation(loc);
       setComfort(pref);
+      setOccasion(ctx);
       setReady(true);
 
       try {
         const data = await fetchWeather(loc);
         if (cancelled) return;
-        applyWeather(data, loadComfortPreference());
+        applyWeather(data, loadComfortPreference(), loadOccasionContext());
       } catch {
         if (cancelled) return;
         setError("Couldn’t load weather. Try another city.");
@@ -184,10 +200,10 @@ export function HomeScreen() {
       const next = applyComfortFeedback(comfort, feedback);
       setComfort(next);
       if (weather) {
-        setOutfit(recommendOutfit({ weather, comfort: next }));
+        setOutfit(recommendOutfit({ weather, comfort: next, occasion }));
       }
     },
-    [comfort, weather],
+    [comfort, weather, occasion],
   );
 
   const handlePreferenceChange = useCallback(
@@ -195,10 +211,22 @@ export function HomeScreen() {
       saveComfortPreference(next);
       setComfort(next);
       if (weather) {
-        setOutfit(recommendOutfit({ weather, comfort: next }));
+        setOutfit(recommendOutfit({ weather, comfort: next, occasion }));
       }
     },
-    [weather],
+    [weather, occasion],
+  );
+
+  const handleOccasionChange = useCallback(
+    (next: OccasionContext) => {
+      saveOccasionContext(next);
+      setOccasion(next);
+      setOccasionOpen(false);
+      if (weather) {
+        setOutfit(recommendOutfit({ weather, comfort, occasion: next }));
+      }
+    },
+    [weather, comfort],
   );
 
   const finishOnboarding = useCallback(() => {
@@ -305,15 +333,31 @@ export function HomeScreen() {
               <p className="mb-2 text-xs text-[var(--coral)]">{locateError}</p>
             )}
 
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--accent)]">
+                Wear this today
+              </p>
+              <button
+                type="button"
+                onClick={() => setOccasionOpen(true)}
+                className="inline-flex items-center gap-1 rounded-full bg-[var(--mint)] px-3 py-1 text-[11px] font-semibold text-[var(--accent)]"
+                aria-haspopup="dialog"
+                aria-expanded={occasionOpen}
+              >
+                {occasionPillLabel(occasion)}
+                <span aria-hidden>▾</span>
+              </button>
+              {confidence && (
+                <span className="text-[11px] font-semibold text-[var(--accent)]">
+                  {confidence}
+                </span>
+              )}
+            </div>
+
             <div className="flex items-start justify-between gap-3">
               <h1 className="font-display text-[1.75rem] leading-tight tracking-tight text-[var(--ink)] sm:text-[2rem]">
                 {formatFitTitle(outfit)}
               </h1>
-              {confidence && (
-                <span className="shrink-0 pt-1 text-[11px] font-semibold text-[var(--accent)]">
-                  {confidence}
-                </span>
-              )}
             </div>
 
             <p className="mt-2 line-clamp-2 text-sm text-[var(--ink-soft)]">
@@ -419,6 +463,49 @@ export function HomeScreen() {
           </section>
         )}
       </main>
+
+      {occasionOpen && (
+        <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/25 p-4 sm:items-center">
+          <div className="w-full max-w-md rounded-3xl bg-[var(--fit-surface)] p-5 shadow-xl">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="font-display text-xl text-[var(--ink)]">Today&apos;s context</h2>
+              <button
+                type="button"
+                onClick={() => setOccasionOpen(false)}
+                className="text-sm text-[var(--ink-muted)]"
+              >
+                Done
+              </button>
+            </div>
+            <p className="mt-1 text-sm text-[var(--ink-muted)]">
+              Changes today&apos;s outfit without replacing your style preference.
+            </p>
+            <ul className="mt-4 space-y-2">
+              {OCCASION_OPTIONS.map((opt) => {
+                const selected = occasion === opt.id;
+                return (
+                  <li key={opt.id}>
+                    <button
+                      type="button"
+                      onClick={() => handleOccasionChange(opt.id)}
+                      className={`flex w-full flex-col rounded-2xl px-4 py-3 text-left ring-1 ${
+                        selected
+                          ? "bg-[var(--mint)] ring-[color-mix(in_srgb,var(--accent)_35%,transparent)]"
+                          : "bg-[var(--surface)] ring-[var(--line)]"
+                      }`}
+                    >
+                      <span className="text-sm font-semibold text-[var(--ink)]">
+                        {opt.label}
+                      </span>
+                      <span className="text-xs text-[var(--ink-muted)]">{opt.hint}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      )}
 
       {showWhy && weather && outfit && (
         <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/25 p-4 sm:items-center">

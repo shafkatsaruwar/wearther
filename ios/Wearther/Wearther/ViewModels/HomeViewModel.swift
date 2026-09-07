@@ -19,6 +19,8 @@ final class HomeViewModel: ObservableObject {
     @Published var savedCities: [LocationResult] = []
     @Published var isLocating = false
     @Published var locateErrorMessage: String?
+    @Published var occasion: OccasionContext = .everyday
+    @Published var isOccasionPickerOpen = false
 
     private var searchTask: Task<Void, Never>?
     private var loadTask: Task<Void, Never>?
@@ -29,6 +31,7 @@ final class HomeViewModel: ObservableObject {
         comfort = ComfortStore.loadComfortPreference()
         notifications = ComfortStore.loadNotificationPreference()
         savedCities = ComfortStore.loadSavedCities()
+        occasion = ComfortStore.loadOccasionContext()
     }
 
     func onAppear() {
@@ -51,7 +54,11 @@ final class HomeViewModel: ObservableObject {
 
             weather = data
             comfort = ComfortStore.loadComfortPreference()
-            let recommendation = OutfitRecommender.recommend(.init(weather: data, comfort: comfort))
+            let recommendation = OutfitRecommender.recommend(.init(
+                weather: data,
+                comfort: comfort,
+                occasion: occasion
+            ))
             outfit = recommendation
             WidgetSnapshotStore.saveFromApp(
                 location: location,
@@ -135,6 +142,13 @@ final class HomeViewModel: ObservableObject {
         recomputeOutfit()
     }
 
+    func updateOccasion(_ value: OccasionContext) {
+        occasion = value
+        ComfortStore.saveOccasionContext(value)
+        isOccasionPickerOpen = false
+        recomputeOutfit()
+    }
+
     func updateAlwaysPack(rainJacket: Bool? = nil, lightLayer: Bool? = nil, scarf: Bool? = nil) {
         if let rainJacket { comfort.alwaysPack.rainJacket = rainJacket }
         if let lightLayer { comfort.alwaysPack.lightLayer = lightLayer }
@@ -201,7 +215,11 @@ final class HomeViewModel: ObservableObject {
 
     private func recomputeOutfit() {
         if let weather {
-            let recommendation = OutfitRecommender.recommend(.init(weather: weather, comfort: comfort))
+            let recommendation = OutfitRecommender.recommend(.init(
+                weather: weather,
+                comfort: comfort,
+                occasion: occasion
+            ))
             outfit = recommendation
             WidgetSnapshotStore.saveFromApp(
                 location: location,

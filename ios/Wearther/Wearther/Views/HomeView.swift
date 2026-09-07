@@ -47,9 +47,57 @@ struct HomeView: View {
                     .presentationDetents([.medium])
                     .presentationDragIndicator(.visible)
             }
+            .sheet(isPresented: $viewModel.isOccasionPickerOpen) {
+                occasionPickerSheet
+            }
         }
         .preferredColorScheme(.light)
         .task { viewModel.onAppear() }
+    }
+
+    private var occasionPickerSheet: some View {
+        NavigationStack {
+            List {
+                Section {
+                    ForEach(OccasionContext.allCases) { option in
+                        Button {
+                            viewModel.updateOccasion(option)
+                        } label: {
+                            HStack(alignment: .top, spacing: 12) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(option.label)
+                                        .font(AppFont.subheadlineMedium)
+                                        .foregroundStyle(AppTheme.ink)
+                                    Text(option.hint)
+                                        .font(AppFont.caption)
+                                        .foregroundStyle(AppTheme.inkMuted)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                Spacer(minLength: 8)
+                                if viewModel.occasion == option {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(AppTheme.accent)
+                                }
+                            }
+                            .padding(.vertical, 4)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                } footer: {
+                    Text("This is today’s context. It remaps the outfit without changing your Tune style preference.")
+                        .font(AppFont.caption)
+                }
+            }
+            .navigationTitle("Today’s context")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { viewModel.isOccasionPickerOpen = false }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 
     // MARK: - Header
@@ -119,6 +167,23 @@ struct HomeView: View {
                         .font(AppFont.labelCaps)
                         .tracking(1.6)
                         .foregroundStyle(AppTheme.accent)
+
+                    Button {
+                        viewModel.isOccasionPickerOpen = true
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(viewModel.occasion.pillLabel)
+                                .font(AppFont.captionSemibold)
+                            Image(systemName: "chevron.down")
+                                .font(.system(size: 9, weight: .bold))
+                        }
+                        .foregroundStyle(AppTheme.accent)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Capsule().fill(AppTheme.mint))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Today's context, \(viewModel.occasion.pillLabel)")
 
                     Spacer(minLength: 8)
 

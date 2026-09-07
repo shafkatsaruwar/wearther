@@ -1,7 +1,12 @@
 import { effectiveWarmthBias } from "@/lib/comfort";
+import {
+  applyOccasionContext,
+  DEFAULT_OCCASION,
+} from "@/lib/occasion";
 import type {
   AlwaysPackPrefs,
   ComfortPreference,
+  OccasionContext,
   OutfitRecommendation,
   StyleMode,
 } from "@/types/outfit";
@@ -10,6 +15,8 @@ import type { HourlyWeather, WeatherData } from "@/types/weather";
 export interface RecommendInput {
   weather: WeatherData;
   comfort?: ComfortPreference;
+  /** Daily occasion — remaps after style. Defaults to everyday. */
+  occasion?: OccasionContext;
 }
 
 const STRONG_WIND_MPH = 12;
@@ -24,6 +31,7 @@ const SIGNIFICANT_DROP_F = 10;
 export function recommendOutfit({
   weather,
   comfort,
+  occasion = DEFAULT_OCCASION,
 }: RecommendInput): OutfitRecommendation {
   const bias = comfort ? effectiveWarmthBias(comfort) : 0;
   const style: StyleMode = comfort?.style ?? "casual";
@@ -97,6 +105,15 @@ export function recommendOutfit({
   if (style !== "casual") {
     reasons.push(`Styled for a ${styleLabel(style)} look.`);
   }
+
+  ({ items, title, bringLater } = applyOccasionContext({
+    occasion,
+    items,
+    title,
+    bringLater,
+    weather,
+    reasons,
+  }));
 
   const explanation = craftExplanation(reasons, weather, windy, rainy);
   const why = whyDetailText(weather, windy, rainy, later);
