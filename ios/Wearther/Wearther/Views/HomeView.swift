@@ -203,15 +203,12 @@ struct HomeView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            // NOW / BRING
+            // NOW / BRING — equal height side-by-side cards
             HStack(alignment: .top, spacing: 10) {
                 summaryCard(title: "NOW", body: nowLine)
-
-                summaryCard(
-                    title: "BRING",
-                    body: bring ?? "Travel light"
-                )
+                summaryCard(title: "BRING", body: bring ?? "Travel light")
             }
+            .fixedSize(horizontal: false, vertical: true)
 
             // Plain clothing definitions
             VStack(spacing: 0) {
@@ -334,9 +331,10 @@ struct HomeView: View {
                 .font(AppFont.subheadlineMedium)
                 .foregroundStyle(AppTheme.ink)
                 .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
         }
         .padding(12)
-        .frame(maxWidth: .infinity, minHeight: 72, alignment: .topLeading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(AppTheme.mint.opacity(0.55))
