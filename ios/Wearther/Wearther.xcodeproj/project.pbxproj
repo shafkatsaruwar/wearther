@@ -139,6 +139,9 @@
 		WW0001010000000000000007 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		WW0001010000000000000008 /* WeartherWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WeartherWidgets.entitlements; sourceTree = "<group>"; };
 		WW0002010000000000000001 /* WeartherWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = WeartherWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA000101000000000000002A /* MorningNotificationScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MorningNotificationScheduler.swift; sourceTree = "<group>"; };
+		AA000101000000000000002B /* PackLaneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackLaneView.swift; sourceTree = "<group>"; };
+		AA000101000000000000002C /* WeatherEvidenceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherEvidenceView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
