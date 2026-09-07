@@ -216,12 +216,12 @@ struct HomeView: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("Dismiss")
             }
-            .foregroundStyle(AppTheme.coral)
+            .foregroundStyle(Color(red: 0.55, green: 0.28, blue: 0.22))
             .padding(.horizontal, 12)
             .padding(.vertical, 9)
             .background(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(AppTheme.coral.opacity(0.12))
+                    .fill(Color(red: 0.96, green: 0.86, blue: 0.80)) // soft peach status, per canvas
             )
         }
     }
@@ -370,8 +370,23 @@ struct HomeView: View {
             )
         ]
 
-        for hour in weather.hourly.prefix(2) {
-            let tip = OutfitRecommender.recommendForHour(hour, comfort: viewModel.comfort)
+        // Prefer canvas hours (6 PM / 9 PM) when present; otherwise first later hours.
+        let preferredHours = [18, 21]
+        var picked: [HourlyWeather] = []
+        for target in preferredHours {
+            if let match = weather.hourly.first(where: { hour in
+                guard let date = ISO8601DateFormatter().date(from: hour.time) else { return false }
+                return Calendar.current.component(.hour, from: date) == target
+            }) {
+                picked.append(match)
+            }
+        }
+        if picked.isEmpty {
+            picked = Array(weather.hourly.prefix(2))
+        }
+
+        for hour in picked.prefix(2) {
+            let tip = canvasHourTip(hour: hour, comfort: viewModel.comfort)
             slots.append(
                 WeatherSlot(
                     label: formattedHour(hour.time),
@@ -382,6 +397,17 @@ struct HomeView: View {
         }
 
         return slots
+    }
+
+    /// Short weather-proof tips like the canvas (“Still fine”, “Jacket time”).
+    private func canvasHourTip(hour: HourlyWeather, comfort: ComfortPreference) -> String {
+        let bias = comfort.effectiveWarmthBias
+        let feels = Double(hour.feelsLike) + bias
+        if hour.precipitationChance >= 45 { return "Rain risk" }
+        if feels >= 76 { return "Still fine" }
+        if feels >= 68 { return "Light layer" }
+        if feels >= 58 { return "Jacket time" }
+        return OutfitRecommender.recommendForHour(hour, comfort: comfort)
     }
 
     private var feedbackBlock: some View {
