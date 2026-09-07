@@ -4,40 +4,43 @@ struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
 
     var body: some View {
-        ZStack {
-            AtmosphereBackground()
+        NavigationStack {
+            ZStack {
+                AtmosphereBackground()
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    header
-                        .padding(.bottom, 8)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        header
+                            .padding(.bottom, 8)
 
-                    if viewModel.isCustomizeOpen {
-                        CustomizeView(viewModel: viewModel)
-                            .padding(.top, 16)
-                    } else if viewModel.isLoading {
-                        loadingPlaceholder
-                            .padding(.top, 32)
-                    } else if let error = viewModel.errorMessage, viewModel.weather == nil {
-                        errorState(error)
-                    } else if let weather = viewModel.weather, let outfit = viewModel.outfit {
-                        content(weather: weather, outfit: outfit)
-                            .padding(.top, 12)
+                        if viewModel.isCustomizeOpen {
+                            CustomizeView(viewModel: viewModel)
+                                .padding(.top, 16)
+                        } else if viewModel.isLoading {
+                            loadingPlaceholder
+                                .padding(.top, 32)
+                        } else if let error = viewModel.errorMessage, viewModel.weather == nil {
+                            errorState(error)
+                        } else if let weather = viewModel.weather, let outfit = viewModel.outfit {
+                            content(weather: weather, outfit: outfit)
+                                .padding(.top, 12)
+                        }
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, 48)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .padding(.bottom, 48)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .scrollContentBackground(.hidden)
+                .scrollIndicators(.hidden)
+                .refreshable {
+                    await viewModel.refreshWeather(showFullLoading: false)
+                }
             }
-            .scrollContentBackground(.hidden)
-            .scrollIndicators(.hidden)
-            .refreshable {
-                await viewModel.refreshWeather(showFullLoading: false)
-            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(AppTheme.bgMid.ignoresSafeArea())
+            .toolbar(.hidden, for: .navigationBar)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(AppTheme.bgMid.ignoresSafeArea())
         .preferredColorScheme(.light)
         .task { viewModel.onAppear() }
     }
@@ -95,12 +98,12 @@ struct HomeView: View {
 
             OutlookView(daily: weather.daily, units: viewModel.comfort.units)
 
-            TripPlannerView(viewModel: viewModel)
-
             ComfortFeedbackView(
                 lastFeedback: viewModel.comfort.lastFeedback,
                 onFeedback: viewModel.submitFeedback
             )
+
+            TripPackEntryCard()
         }
     }
 

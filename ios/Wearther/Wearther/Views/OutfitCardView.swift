@@ -6,6 +6,7 @@ struct OutfitCardView: View {
     let comfort: ComfortPreference
 
     @State private var showWhy = false
+    @State private var selectedItem: ClothingInfo?
 
     private var displayTitle: String {
         FitCopy.formatTitle(outfit)
@@ -49,23 +50,37 @@ struct OutfitCardView: View {
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.top, 16)
 
-            HStack(alignment: .top, spacing: 12) {
+            HStack(alignment: .top, spacing: 10) {
                 ForEach(Array(outfit.items.prefix(3)), id: \.self) { item in
-                    VStack(spacing: 8) {
-                        Circle()
-                            .fill(AppTheme.fitIconBg)
-                            .frame(width: 58, height: 58)
-                            .overlay {
-                                ClothingGlyphView(label: item)
-                                    .foregroundStyle(AppTheme.inkSoft)
-                            }
-                        Text(item)
-                            .font(.system(size: 11, weight: .medium))
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(AppTheme.inkMuted)
-                            .frame(maxWidth: 96)
+                    let info = ClothingInfoProvider.info(for: item, weather: weather)
+                    Button {
+                        selectedItem = info
+                    } label: {
+                        VStack(spacing: 8) {
+                            Circle()
+                                .fill(AppTheme.fitIconBg)
+                                .frame(width: 58, height: 58)
+                                .overlay {
+                                    ClothingGlyphView(label: item)
+                                        .foregroundStyle(AppTheme.inkSoft)
+                                }
+                            Text(item)
+                                .font(.system(size: 12, weight: .semibold))
+                                .multilineTextAlignment(.center)
+                                .foregroundStyle(AppTheme.ink)
+                                .frame(maxWidth: 100)
+                            Text(info.subtitle)
+                                .font(.system(size: 11, weight: .medium))
+                                .multilineTextAlignment(.center)
+                                .foregroundStyle(AppTheme.inkMuted)
+                                .frame(maxWidth: 100)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
                     }
-                    .frame(maxWidth: .infinity)
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Learn about \(item)")
                 }
             }
             .padding(.top, 28)
@@ -112,5 +127,62 @@ struct OutfitCardView: View {
         .padding(.vertical, 24)
         .frame(maxWidth: .infinity, alignment: .leading)
         .cardSurface(radius: 30)
+        .sheet(item: $selectedItem) { info in
+            ClothingInfoSheet(info: info)
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+        }
+    }
+}
+
+private struct ClothingInfoSheet: View {
+    let info: ClothingInfo
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .top) {
+                Text(info.name)
+                    .font(AppFont.display(28))
+                    .foregroundStyle(AppTheme.ink)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 12)
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(AppTheme.inkMuted)
+                        .frame(width: 44, height: 44)
+                        .background(Circle().fill(AppTheme.surface))
+                        .overlay(Circle().stroke(AppTheme.line, lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Close")
+            }
+
+            detailBlock(title: "What it is", body: info.whatItIs)
+                .padding(.top, 24)
+            detailBlock(title: "Why today", body: info.whyToday)
+                .padding(.top, 18)
+
+            Spacer(minLength: 0)
+        }
+        .padding(24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(AppTheme.cream.ignoresSafeArea())
+    }
+
+    private func detailBlock(title: String, body: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title.uppercased())
+                .font(AppFont.labelCaps)
+                .tracking(1.6)
+                .foregroundStyle(AppTheme.inkMuted)
+            Text(body)
+                .font(AppFont.body)
+                .foregroundStyle(AppTheme.inkSoft)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }
