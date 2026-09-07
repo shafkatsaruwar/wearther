@@ -80,7 +80,7 @@ enum ComfortStore {
         guard let data = UserDefaults.standard.data(forKey: locationKey),
               let location = try? JSONDecoder().decode(LocationResult.self, from: data)
         else {
-            return MockWeatherProvider.defaultCity
+            return .boston
         }
         return location
     }

@@ -107,6 +107,16 @@ struct LocationResult: Codable, Equatable, Identifiable, Hashable {
     let country: String
     let latitude: Double
     let longitude: Double
+
+    /// Shared default city — safe for app + widget targets (no mock provider dependency).
+    static let boston = LocationResult(
+        id: "boston-us",
+        name: "Boston",
+        region: "Massachusetts",
+        country: "United States",
+        latitude: 42.3601,
+        longitude: -71.0589
+    )
 }
 
 enum WeatherProviderName: String {
