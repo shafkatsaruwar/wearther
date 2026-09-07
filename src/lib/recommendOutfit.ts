@@ -3,6 +3,7 @@ import {
   applyOccasionContext,
   DEFAULT_OCCASION,
 } from "@/lib/occasion";
+import { getRemoteConfig } from "./remoteConfig";
 import type {
   AlwaysPackPrefs,
   ComfortPreference,
@@ -19,31 +20,27 @@ export interface RecommendInput {
   occasion?: OccasionContext;
 }
 
-const STRONG_WIND_MPH = 12;
-const HIGH_RAIN_CHANCE = 45;
-const HIGH_HUMIDITY = 70;
-const SIGNIFICANT_DROP_F = 10;
-
 /**
  * Clothing recommendation engine.
- * Pure function — no React, no I/O. Safe to move server-side later.
+ * Pure function — no React, no I/O. Thresholds come from remote config.
  */
 export function recommendOutfit({
   weather,
   comfort,
   occasion = DEFAULT_OCCASION,
 }: RecommendInput): OutfitRecommendation {
+  const t = getRemoteConfig().thresholds;
   const bias = comfort ? effectiveWarmthBias(comfort) : 0;
   const style: StyleMode = comfort?.style ?? "casual";
   const alwaysPack = comfort?.alwaysPack;
   const adjustedFeels = weather.feelsLike + bias;
 
-  const windy = weather.windSpeed >= STRONG_WIND_MPH;
-  const rainy = weather.precipitationChance >= HIGH_RAIN_CHANCE;
-  const humid = weather.humidity >= HIGH_HUMIDITY;
+  const windy = weather.windSpeed >= t.strongWindMph;
+  const rainy = weather.precipitationChance >= t.highRainChance;
+  const humid = weather.humidity >= t.highHumidity;
 
   let effective = adjustedFeels;
-  if (windy && adjustedFeels < 75) {
+  if (windy && adjustedFeels < t.windChillBelowF) {
     effective -= Math.min(6, Math.round(weather.windSpeed / 4));
   }
 
@@ -64,7 +61,7 @@ export function recommendOutfit({
     warmthLevel = Math.min(10, warmthLevel + 0.5);
   }
 
-  if (windy && effective >= 52 && effective <= 75) {
+  if (windy && effective >= t.windJacketMinF && effective <= t.windJacketMaxF) {
     if (!items.some((i) => /jacket|coat|sweater/i.test(i))) {
       items.push("Light jacket");
       title = joinTitle(title, "Light Jacket");
@@ -76,13 +73,13 @@ export function recommendOutfit({
   if (later) {
     if (!items.some((i) => /jacket|coat|bring/i.test(i))) {
       title = joinTitle(stripBring(title), "Bring a Jacket");
-    } else if (!/bring/i.test(title) && later.drop >= SIGNIFICANT_DROP_F) {
+    } else if (!/bring/i.test(title) && later.drop >= t.significantDropF) {
       title = joinTitle(stripBring(title), "Bring a Jacket");
     }
     reasons.push(later.message);
   }
 
-  if (humid && weather.feelsLike >= 76) {
+  if (humid && weather.feelsLike >= t.humidHotFeelsF) {
     reasons.push("High humidity favors breathable fabrics like linen.");
   }
 
@@ -133,17 +130,19 @@ export function recommendForHour(
   hour: HourlyWeather,
   comfort?: ComfortPreference,
 ): string {
+  const bands = getRemoteConfig().thresholds.tempBandsF;
+  const rainCut = getRemoteConfig().thresholds.highRainChance;
   const bias = comfort ? effectiveWarmthBias(comfort) : 0;
-  const t = hour.feelsLike + bias;
-  const rainy = hour.precipitationChance >= HIGH_RAIN_CHANCE;
+  const temp = hour.feelsLike + bias;
+  const rainy = hour.precipitationChance >= rainCut;
   const tip = (() => {
-    if (t >= 85) return rainy ? "Linen + rain layer" : "Linen / shorts";
-    if (t >= 76) return rainy ? "Short sleeve + rain jacket" : "Short sleeve";
-    if (t >= 68) return rainy ? "Light layers + rain jacket" : "Jacket optional";
-    if (t >= 60) return "Long sleeve";
-    if (t >= 52) return "Long sleeve + light jacket";
-    if (t >= 42) return "Sweater + jacket";
-    if (t >= 32) return "Sweater + coat";
+    if (temp >= bands[0]) return rainy ? "Linen + rain layer" : "Linen / shorts";
+    if (temp >= bands[1]) return rainy ? "Short sleeve + rain jacket" : "Short sleeve";
+    if (temp >= bands[2]) return rainy ? "Light layers + rain jacket" : "Jacket optional";
+    if (temp >= bands[3]) return "Long sleeve";
+    if (temp >= bands[4]) return "Long sleeve + light jacket";
+    if (temp >= bands[5]) return "Sweater + jacket";
+    if (temp >= bands[6]) return "Sweater + coat";
     return "Heavy coat + layers";
   })();
 
@@ -331,7 +330,9 @@ function baseLayerForTemp(
   warmthLevel: number;
   reason: string;
 } {
-  if (temp >= 85) {
+  const [b0, b1, b2, b3, b4, b5, b6] = getRemoteConfig().thresholds.tempBandsF;
+
+  if (temp >= b0) {
     return {
       title: humid ? "Linen + Shorts" : "Linen or Short Sleeve + Shorts",
       items: humid
@@ -342,7 +343,7 @@ function baseLayerForTemp(
     };
   }
 
-  if (temp >= 76) {
+  if (temp >= b1) {
     return {
       title: humid ? "Linen" : "Short Sleeve or Linen",
       items: humid
@@ -353,7 +354,7 @@ function baseLayerForTemp(
     };
   }
 
-  if (temp >= 68) {
+  if (temp >= b2) {
     return {
       title: "Short Sleeve or Thin Long Sleeve",
       items: ["Short sleeve or thin long sleeve", "Pants or chinos", "Sneakers"],
@@ -362,7 +363,7 @@ function baseLayerForTemp(
     };
   }
 
-  if (temp >= 60) {
+  if (temp >= b3) {
     return {
       title: "Long Sleeve",
       items: ["Long sleeve shirt", "Jeans or chinos", "Sneakers"],
@@ -371,7 +372,7 @@ function baseLayerForTemp(
     };
   }
 
-  if (temp >= 52) {
+  if (temp >= b4) {
     return {
       title: "Long Sleeve + Light Jacket",
       items: ["Long sleeve shirt", "Light jacket", "Jeans or chinos", "Sneakers"],
@@ -380,7 +381,7 @@ function baseLayerForTemp(
     };
   }
 
-  if (temp >= 42) {
+  if (temp >= b5) {
     return {
       title: "Sweater + Jacket",
       items: ["Sweater", "Light jacket", "Pants", "Sneakers"],
@@ -389,7 +390,7 @@ function baseLayerForTemp(
     };
   }
 
-  if (temp >= 32) {
+  if (temp >= b6) {
     return {
       title: "Sweater + Heavy Jacket",
       items: ["Sweater", "Heavy jacket / coat", "Pants", "Closed shoes"],
@@ -422,8 +423,11 @@ function laterDropAdvice(
   const coldest = Math.min(...eveningTemps);
   const drop = currentEffective - coldest;
 
-  if (drop < SIGNIFICANT_DROP_F) return undefined;
-  if (coldest >= 68) return undefined;
+  const dropCut = getRemoteConfig().thresholds.significantDropF;
+  const mildBand = getRemoteConfig().thresholds.tempBandsF[2] ?? 68;
+
+  if (drop < dropCut) return undefined;
+  if (coldest >= mildBand) return undefined;
 
   return {
     drop: Math.round(drop),

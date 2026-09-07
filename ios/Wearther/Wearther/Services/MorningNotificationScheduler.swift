@@ -38,7 +38,7 @@ enum MorningNotificationScheduler {
         guard let weather, let outfit else { return }
 
         let content = UNMutableNotificationContent()
-        content.title = "Today’s Fit"
+        content.title = RemoteConfigStore.current.copy.notificationTitle
         content.body = FitCopy.notificationBody(
             locationName: locationName,
             weather: weather,

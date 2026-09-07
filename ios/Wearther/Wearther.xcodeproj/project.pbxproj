@@ -51,6 +51,7 @@
 		AA0000010000000000000025 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000025 /* WidgetKit.framework */; };
 		AA0000010000000000000026 /* WeartherWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = WW0002010000000000000001 /* WeartherWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AA0000010000000000000031 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000031 /* LocationService.swift */; };
+		AA0000010000000000000032 /* RemoteConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000032 /* RemoteConfigStore.swift */; };
 		WW0000010000000000000001 /* WeartherWidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = WW0001010000000000000001 /* WeartherWidgetsBundle.swift */; };
 		WW0000010000000000000002 /* WeartherWidgetProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = WW0001010000000000000002 /* WeartherWidgetProvider.swift */; };
 		WW0000010000000000000003 /* WeartherWidgetViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = WW0001010000000000000003 /* WeartherWidgetViews.swift */; };
@@ -61,6 +62,7 @@
 		WW0000010000000000000008 /* WeatherModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000002 /* WeatherModels.swift */; };
 		WW0000010000000000000009 /* OutfitModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000003 /* OutfitModels.swift */; };
 		WW000001000000000000000A /* ComfortStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000009 /* ComfortStore.swift */; };
+		WW0000010000000000000012 /* RemoteConfigStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000032 /* RemoteConfigStore.swift */; };
 		WW000001000000000000000B /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000025 /* WidgetKit.framework */; };
 		WW000001000000000000000C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = WW0001010000000000000006 /* SwiftUI.framework */; };
 		WW000001000000000000000D /* Outfit-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000016 /* Outfit-Regular.ttf */; };
@@ -150,6 +152,7 @@
 		AA000101000000000000002F /* TripPackScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripPackScreen.swift; sourceTree = "<group>"; };
 		AA0001010000000000000030 /* TripPackEntryCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TripPackEntryCard.swift; sourceTree = "<group>"; };
 		AA0001010000000000000031 /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
+		AA0001010000000000000032 /* RemoteConfigStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -239,6 +242,7 @@
 				AA0001010000000000000009 /* ComfortStore.swift */,
 				AA000101000000000000002A /* MorningNotificationScheduler.swift */,
 				AA0001010000000000000031 /* LocationService.swift */,
+				AA0001010000000000000032 /* RemoteConfigStore.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -452,6 +456,7 @@
 				AA0000010000000000000007 /* OpenWeatherProvider.swift in Sources */,
 				AA0000010000000000000008 /* WeatherService.swift in Sources */,
 				AA0000010000000000000031 /* LocationService.swift in Sources */,
+				AA0000010000000000000032 /* RemoteConfigStore.swift in Sources */,
 				AA000001000000000000002A /* MorningNotificationScheduler.swift in Sources */,
 				AA0000010000000000000009 /* ComfortStore.swift in Sources */,
 				AA000001000000000000000A /* HomeViewModel.swift in Sources */,
@@ -492,6 +497,7 @@
 				WW0000010000000000000008 /* WeatherModels.swift in Sources */,
 				WW0000010000000000000009 /* OutfitModels.swift in Sources */,
 				WW000001000000000000000A /* ComfortStore.swift in Sources */,
+				WW0000010000000000000012 /* RemoteConfigStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

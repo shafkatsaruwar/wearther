@@ -3,6 +3,7 @@ import SwiftUI
 @main
 struct WeartherApp: App {
     @State private var showOnboarding = !ComfortStore.hasCompletedOnboarding
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         AppFont.registerBundledFonts()
@@ -22,6 +23,13 @@ struct WeartherApp: App {
                 }
             }
             .preferredColorScheme(.light)
+            .task {
+                await RemoteConfigStore.refreshIfNeeded()
+            }
+            .onChange(of: scenePhase) { _, phase in
+                guard phase == .active else { return }
+                Task { await RemoteConfigStore.refreshIfNeeded() }
+            }
             .onOpenURL { url in
                 // Widgets deep-link with wearther://home
                 guard url.scheme == "wearther" else { return }

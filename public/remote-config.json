@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "thresholds": {
+    "strongWindMph": 12,
+    "highRainChance": 45,
+    "packRainChance": 40,
+    "highHumidity": 70,
+    "lowHumidity": 35,
+    "significantDropF": 10,
+    "diurnalSpanF": 12,
+    "windChillBelowF": 75,
+    "windJacketMinF": 52,
+    "windJacketMaxF": 75,
+    "humidHotFeelsF": 76,
+    "tempBandsF": [85, 76, 68, 60, 52, 42, 32]
+  },
+  "timing": {
+    "weatherStaleMinutes": 90,
+    "widgetRefreshMinutes": 30,
+    "widgetStaleHours": 3,
+    "configCacheMinutes": 60
+  },
+  "copy": {
+    "confidence": {
+      "confident": "Confident",
+      "bringBackup": "Bring backup",
+      "rainRisk": "Rain risk",
+      "eveningDrop": "Evening drop",
+      "tunedForYou": "Tuned for you"
+    },
+    "packTips": {
+      "rainLayer": "Rain layer",
+      "lightLayer": "Light layer",
+      "travelLight": "Travel light"
+    },
+    "feedback": {
+      "too_cold": "Got it. Tomorrow will lean warmer.",
+      "too_hot": "Got it. Tomorrow will lighten up.",
+      "perfect": "Nice. Keeping this baseline."
+    },
+    "notificationTitle": "Today’s Fit"
+  },
+  "flags": {
+    "enableOccasionPicker": true,
+    "enableTripPack": true,
+    "enableMorningNotifications": true
+  }
+}

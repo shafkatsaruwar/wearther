@@ -18,12 +18,14 @@ struct WeartherWidgetProvider: TimelineProvider {
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<WeartherWidgetEntry>) -> Void) {
         var snap = WidgetSnapshotStore.load() ?? .placeholder
-        if Date().timeIntervalSince(snap.updatedAt) > 3 * 60 * 60 {
+        let staleHours = RemoteConfigStore.current.timing.widgetStaleHours
+        if Date().timeIntervalSince(snap.updatedAt) > Double(staleHours) * 60 * 60 {
             snap.isStale = true
         }
         let entry = WeartherWidgetEntry(date: Date(), snapshot: snap)
-        let next = Calendar.current.date(byAdding: .minute, value: 30, to: Date())
-            ?? Date().addingTimeInterval(1800)
+        let minutes = max(15, RemoteConfigStore.current.timing.widgetRefreshMinutes)
+        let next = Calendar.current.date(byAdding: .minute, value: minutes, to: Date())
+            ?? Date().addingTimeInterval(Double(minutes) * 60)
         completion(Timeline(entries: [entry], policy: .after(next)))
     }
 }

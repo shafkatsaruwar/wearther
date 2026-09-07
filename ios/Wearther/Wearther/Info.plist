@@ -54,6 +54,8 @@
 	<string>open-meteo</string>
 	<key>OPENWEATHER_API_KEY</key>
 	<string></string>
+	<key>WEARTHER_CONFIG_URL</key>
+	<string>https://raw.githubusercontent.com/shafkatsaruwar/wearther/main/public/remote-config.json</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Wearther uses your location to recommend what to wear where you are.</string>
 	<key>NSUserNotificationsUsageDescription</key>

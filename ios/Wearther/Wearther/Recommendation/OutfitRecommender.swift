@@ -1,11 +1,9 @@
 import Foundation
 
 /// Pure clothing recommendation engine — mirrors web `lib/recommendOutfit.ts`.
+/// Weather gates read from `RemoteConfigStore` so they can change OTA.
 enum OutfitRecommender {
-    private static let strongWindMPH = 12.0
-    private static let highRainChance = 45.0
-    private static let highHumidity = 70.0
-    private static let significantDropF = 10.0
+    private static var t: WeartherRemoteConfig.Thresholds { RemoteConfigStore.current.thresholds }
 
     struct RecommendInput {
         let weather: WeatherData
@@ -31,13 +29,14 @@ enum OutfitRecommender {
         let style = input.comfort?.style ?? .casual
         let alwaysPack = input.comfort?.alwaysPack
         let adjustedFeels = Double(input.weather.feelsLike) + bias
+        let thresholds = t
 
-        let windy = Double(input.weather.windSpeed) >= strongWindMPH
-        let rainy = Double(input.weather.precipitationChance) >= highRainChance
-        let humid = Double(input.weather.humidity) >= highHumidity
+        let windy = Double(input.weather.windSpeed) >= thresholds.strongWindMph
+        let rainy = Double(input.weather.precipitationChance) >= thresholds.highRainChance
+        let humid = Double(input.weather.humidity) >= thresholds.highHumidity
 
         var effective = adjustedFeels
-        if windy && adjustedFeels < 75 {
+        if windy && adjustedFeels < thresholds.windChillBelowF {
             effective -= min(6, round(Double(input.weather.windSpeed) / 4))
         }
 
@@ -58,7 +57,7 @@ enum OutfitRecommender {
             warmthLevel = min(10, warmthLevel + 0.5)
         }
 
-        if windy && effective >= 52 && effective <= 75 {
+        if windy && effective >= thresholds.windJacketMinF && effective <= thresholds.windJacketMaxF {
             if !items.contains(where: { $0.range(of: "jacket|coat|sweater", options: .regularExpression) != nil }) {
                 items.append("Light jacket")
                 title = joinTitle(title, "Light Jacket")
@@ -70,13 +69,13 @@ enum OutfitRecommender {
         if let later {
             if !items.contains(where: { $0.range(of: "jacket|coat|bring", options: .regularExpression) != nil }) {
                 title = joinTitle(stripBring(title), "Bring a Jacket")
-            } else if title.range(of: "bring", options: .caseInsensitive) == nil && later.drop >= Int(significantDropF) {
+            } else if title.range(of: "bring", options: .caseInsensitive) == nil && later.drop >= Int(thresholds.significantDropF) {
                 title = joinTitle(stripBring(title), "Bring a Jacket")
             }
             reasons.append(later.message)
         }
 
-        if humid && Double(input.weather.feelsLike) >= 76 {
+        if humid && Double(input.weather.feelsLike) >= thresholds.humidHotFeelsF {
             reasons.append("High humidity favors breathable fabrics like linen.")
         }
 
@@ -135,17 +134,18 @@ enum OutfitRecommender {
 
     static func recommendForHour(_ hour: HourlyWeather, comfort: ComfortPreference?) -> String {
         let bias = comfort?.effectiveWarmthBias ?? 0
-        let t = Double(hour.feelsLike) + bias
-        let rainy = Double(hour.precipitationChance) >= highRainChance
+        let bands = t.tempBandsF
+        let temp = Double(hour.feelsLike) + bias
+        let rainy = Double(hour.precipitationChance) >= t.highRainChance
 
         let tip: String
-        if t >= 85 { tip = rainy ? "Linen + rain layer" : "Linen / shorts" }
-        else if t >= 76 { tip = rainy ? "Short sleeve + rain jacket" : "Short sleeve" }
-        else if t >= 68 { tip = rainy ? "Light layers + rain jacket" : "Jacket optional" }
-        else if t >= 60 { tip = "Long sleeve" }
-        else if t >= 52 { tip = "Long sleeve + light jacket" }
-        else if t >= 42 { tip = "Sweater + jacket" }
-        else if t >= 32 { tip = "Sweater + coat" }
+        if temp >= bands[0] { tip = rainy ? "Linen + rain layer" : "Linen / shorts" }
+        else if temp >= bands[1] { tip = rainy ? "Short sleeve + rain jacket" : "Short sleeve" }
+        else if temp >= bands[2] { tip = rainy ? "Light layers + rain jacket" : "Jacket optional" }
+        else if temp >= bands[3] { tip = "Long sleeve" }
+        else if temp >= bands[4] { tip = "Long sleeve + light jacket" }
+        else if temp >= bands[5] { tip = "Sweater + jacket" }
+        else if temp >= bands[6] { tip = "Sweater + coat" }
         else { tip = "Heavy coat + layers" }
 
         return styleHourTip(comfort?.style ?? .casual, tip)
@@ -199,8 +199,8 @@ enum OutfitRecommender {
     ) {
         guard occasion != .everyday else { return }
 
-        let rainy = Double(weather.precipitationChance) >= highRainChance
-        let hot = Double(weather.feelsLike) >= 76
+        let rainy = Double(weather.precipitationChance) >= t.highRainChance
+        let hot = Double(weather.feelsLike) >= t.humidHotFeelsF
         let coolIndoor = Double(weather.feelsLike) >= 70
 
         if occasion.isCorporate {
@@ -480,7 +480,11 @@ enum OutfitRecommender {
     // MARK: - Core engine
 
     private static func baseLayer(for temp: Double, humid: Bool) -> BaseLayer {
-        if temp >= 85 {
+        let bands = t.tempBandsF
+        let b0 = bands[0], b1 = bands[1], b2 = bands[2], b3 = bands[3]
+        let b4 = bands[4], b5 = bands[5], b6 = bands[6]
+
+        if temp >= b0 {
             return BaseLayer(
                 title: humid ? "Linen + Shorts" : "Linen or Short Sleeve + Shorts",
                 items: humid
@@ -490,7 +494,7 @@ enum OutfitRecommender {
                 reason: "It's hot out — keep it light and breathable."
             )
         }
-        if temp >= 76 {
+        if temp >= b1 {
             return BaseLayer(
                 title: humid ? "Linen" : "Short Sleeve or Linen",
                 items: humid
@@ -500,7 +504,7 @@ enum OutfitRecommender {
                 reason: "Warm weather calls for light, easy layers."
             )
         }
-        if temp >= 68 {
+        if temp >= b2 {
             return BaseLayer(
                 title: "Short Sleeve or Thin Long Sleeve",
                 items: ["Short sleeve or thin long sleeve", "Pants or chinos", "Sneakers"],
@@ -508,7 +512,7 @@ enum OutfitRecommender {
                 reason: "Mild and comfortable — a thin top should be enough."
             )
         }
-        if temp >= 60 {
+        if temp >= b3 {
             return BaseLayer(
                 title: "Long Sleeve",
                 items: ["Long sleeve shirt", "Jeans or chinos", "Sneakers"],
@@ -516,7 +520,7 @@ enum OutfitRecommender {
                 reason: "Cool enough for long sleeves without a jacket."
             )
         }
-        if temp >= 52 {
+        if temp >= b4 {
             return BaseLayer(
                 title: "Long Sleeve + Light Jacket",
                 items: ["Long sleeve shirt", "Light jacket", "Jeans or chinos", "Sneakers"],
@@ -524,7 +528,7 @@ enum OutfitRecommender {
                 reason: "A light jacket should keep you comfortable."
             )
         }
-        if temp >= 42 {
+        if temp >= b5 {
             return BaseLayer(
                 title: "Sweater + Jacket",
                 items: ["Sweater", "Light jacket", "Pants", "Sneakers"],
@@ -532,7 +536,7 @@ enum OutfitRecommender {
                 reason: "Chilly air — sweater plus a jacket works well."
             )
         }
-        if temp >= 32 {
+        if temp >= b6 {
             return BaseLayer(
                 title: "Sweater + Heavy Jacket",
                 items: ["Sweater", "Heavy jacket / coat", "Pants", "Closed shoes"],
@@ -559,9 +563,10 @@ enum OutfitRecommender {
 
         let coldest = weather.hourly.map(\.feelsLike).min() ?? Int(currentEffective)
         let drop = currentEffective - Double(coldest)
+        let mildBand = Int(t.tempBandsF[2])
 
-        if drop < significantDropF { return nil }
-        if coldest >= 68 { return nil }
+        if drop < t.significantDropF { return nil }
+        if coldest >= mildBand { return nil }
 
         return LaterAdvice(
             drop: Int(round(drop)),

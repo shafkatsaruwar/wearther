@@ -34,6 +34,7 @@ import {
   loadSavedLocation,
   saveLocation,
 } from "@/lib/storage";
+import { getRemoteConfig, refreshRemoteConfig } from "@/lib/remoteConfig";
 import { DEFAULT_CITY } from "@/services/weather";
 import type {
   ComfortFeedback,
@@ -121,6 +122,9 @@ export function HomeScreen() {
     let cancelled = false;
 
     void (async () => {
+      await refreshRemoteConfig();
+      if (cancelled) return;
+
       const onboarded = hasCompletedOnboarding();
       if (cancelled) return;
 
@@ -337,6 +341,7 @@ export function HomeScreen() {
               <p className="text-[11px] font-medium uppercase tracking-[0.16em] text-[var(--accent)]">
                 Wear this today
               </p>
+              {getRemoteConfig().flags.enableOccasionPicker && (
               <button
                 type="button"
                 onClick={() => setOccasionOpen(true)}
@@ -347,6 +352,7 @@ export function HomeScreen() {
                 {occasionPillLabel(occasion)}
                 <span aria-hidden>▾</span>
               </button>
+              )}
               {confidence && (
                 <span className="text-[11px] font-semibold text-[var(--accent)]">
                   {confidence}

@@ -38,17 +38,19 @@ enum FitCopy {
         weather: WeatherData,
         comfort: ComfortPreference
     ) -> FitConfidence {
+        let thresholds = RemoteConfigStore.current.thresholds
         if comfort.feedbackCount > 0 || comfort.lastFeedback != nil {
             return .tunedForYou
         }
-        if weather.precipitationChance >= 45 {
+        if Double(weather.precipitationChance) >= thresholds.highRainChance {
             return .rainRisk
         }
         if outfit.bringLater != nil {
             return .eveningDrop
         }
         let tip = packTip(outfit: outfit, weather: weather)
-        if tip.value.lowercased() != "travel light" {
+        let travel = RemoteConfigStore.current.copy.packTips.travelLight.lowercased()
+        if tip.value.lowercased() != travel {
             return .bringBackup
         }
         return .confident
@@ -56,10 +58,11 @@ enum FitCopy {
 
     /// Back-compat for widget / older call sites.
     static func confidenceLabel(_ comfort: ComfortPreference) -> String {
+        let copy = RemoteConfigStore.current.copy.confidence
         if comfort.feedbackCount > 0 || comfort.lastFeedback != nil {
-            return FitConfidence.tunedForYou.rawValue
+            return copy.tunedForYou
         }
-        return FitConfidence.confident.rawValue
+        return copy.confident
     }
 
     static func confidenceLabel(
@@ -67,10 +70,18 @@ enum FitCopy {
         weather: WeatherData,
         comfort: ComfortPreference
     ) -> String {
-        confidence(outfit: outfit, weather: weather, comfort: comfort).rawValue
+        let copy = RemoteConfigStore.current.copy.confidence
+        switch confidence(outfit: outfit, weather: weather, comfort: comfort) {
+        case .confident: return copy.confident
+        case .bringBackup: return copy.bringBackup
+        case .rainRisk: return copy.rainRisk
+        case .eveningDrop: return copy.eveningDrop
+        case .tunedForYou: return copy.tunedForYou
+        }
     }
 
     static func packTip(outfit: OutfitRecommendation, weather: WeatherData) -> (label: String, value: String) {
+        let cfg = RemoteConfigStore.current
         if let later = outfit.bringLater {
             let short = later
                 .replacingOccurrences(
@@ -81,17 +92,18 @@ enum FitCopy {
                 .trimmingCharacters(in: CharacterSet(charactersIn: "."))
             return ("Pack", short.prefix(1).uppercased() + short.dropFirst())
         }
-        if weather.precipitationChance >= 40 {
-            return ("Pack", "Rain layer")
+        if Double(weather.precipitationChance) >= cfg.thresholds.packRainChance {
+            return ("Pack", cfg.copy.packTips.rainLayer)
         }
-        if weather.high - weather.low >= 12 {
-            return ("Pack", "Light layer")
+        if Double(weather.high - weather.low) >= cfg.thresholds.diurnalSpanF {
+            return ("Pack", cfg.copy.packTips.lightLayer)
         }
-        return ("Pack", "Travel light")
+        return ("Pack", cfg.copy.packTips.travelLight)
     }
 
     /// First-class pack lane cards (empty when nothing special to pack).
     static func packLaneItems(outfit: OutfitRecommendation, weather: WeatherData) -> [String] {
+        let cfg = RemoteConfigStore.current
         var items: [String] = []
 
         if let later = outfit.bringLater {
@@ -106,16 +118,16 @@ enum FitCopy {
             items.append(titled)
         }
 
-        if weather.precipitationChance >= 40 {
+        if Double(weather.precipitationChance) >= cfg.thresholds.packRainChance {
             let rain = "Rain shell"
             if !items.contains(where: { $0.localizedCaseInsensitiveContains("rain") }) {
                 items.append(rain)
             }
         }
 
-        if weather.high - weather.low >= 12,
+        if Double(weather.high - weather.low) >= cfg.thresholds.diurnalSpanF,
            !items.contains(where: { $0.localizedCaseInsensitiveContains("layer") || $0.localizedCaseInsensitiveContains("jacket") }) {
-            items.append("Light layer")
+            items.append(cfg.copy.packTips.lightLayer)
         }
 
         return items
@@ -135,10 +147,11 @@ enum FitCopy {
     /// Never dump the long humidity/wind “why” strip here — that lives behind Why?.
     static func decisionSubtitle(outfit: OutfitRecommendation, weather: WeatherData) -> String {
         let hasPack = outfit.bringLater != nil || !packLaneItems(outfit: outfit, weather: weather).isEmpty
+        let packRain = RemoteConfigStore.current.thresholds.packRainChance
         if hasPack, weather.feelsLike >= 70 {
             return "It is warm now, but you will want a layer after dinner."
         }
-        if weather.precipitationChance >= 40 {
+        if Double(weather.precipitationChance) >= packRain {
             return "Rain is in play — dress for now and keep a shell handy."
         }
         if weather.feelsLike >= 82 {
@@ -197,16 +210,17 @@ enum FitCopy {
 
         var parts: [String] = []
         parts.append("Feels like \(weather.feelsLike)°")
+        let thresholds = RemoteConfigStore.current.thresholds
 
-        if weather.humidity >= 70 {
+        if Double(weather.humidity) >= thresholds.highHumidity {
             parts.append("humidity is high (\(weather.humidity)%)")
-        } else if weather.humidity <= 35 {
+        } else if Double(weather.humidity) <= thresholds.lowHumidity {
             parts.append("humidity is low (\(weather.humidity)%)")
         } else {
             parts.append("humidity is moderate (\(weather.humidity)%)")
         }
 
-        if weather.windSpeed >= 12 {
+        if Double(weather.windSpeed) >= thresholds.strongWindMph {
             parts.append("wind is strong (\(weather.windSpeed) mph)")
         } else if weather.windSpeed >= 8 {
             parts.append("wind is breezy (\(weather.windSpeed) mph)")
@@ -214,12 +228,12 @@ enum FitCopy {
             parts.append("wind is mild (\(weather.windSpeed) mph)")
         }
 
-        if weather.precipitationChance >= 45 {
+        if Double(weather.precipitationChance) >= thresholds.highRainChance {
             parts.append("rain chance is \(weather.precipitationChance)%")
         }
 
         if let hourlyDrop = eveningDropDegrees(weather: weather) {
-            if hourlyDrop >= 10 {
+            if Double(hourlyDrop) >= thresholds.significantDropF {
                 parts.append("evening drops about \(hourlyDrop)°")
             } else {
                 parts.append("evening only drops \(hourlyDrop)°")
@@ -230,13 +244,14 @@ enum FitCopy {
     }
 
     static func feedbackResponse(_ feedback: ComfortFeedback) -> String {
+        let copy = RemoteConfigStore.current.copy.feedback
         switch feedback {
         case .tooCold:
-            return "Got it. Tomorrow will lean warmer."
+            return copy.too_cold
         case .perfect:
-            return "Nice. Keeping this baseline."
+            return copy.perfect
         case .tooHot:
-            return "Got it. Tomorrow will lighten up."
+            return copy.too_hot
         }
     }
 

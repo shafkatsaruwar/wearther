@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --experimental-strip-types --test src/lib/clothingInfo.test.ts src/lib/occasion.test.ts"
+    "test": "node --experimental-strip-types --test src/lib/clothingInfo.test.ts src/lib/occasion.test.ts src/lib/remoteConfig.test.ts"
   },
   "dependencies": {
     "next": "16.3.3",

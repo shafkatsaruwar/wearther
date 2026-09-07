@@ -34,6 +34,16 @@ Typography matches the web app: **Outfit** (UI/body) and **Fraunces** (display h
 
 Fonts are registered at launch via Core Text. After pulling font changes, run **Product → Clean Build Folder** in Xcode before rebuilding — a simple reload is not enough.
 
+## Remote config (OTA knobs)
+
+Edit [`public/remote-config.json`](../public/remote-config.json) on `main` to change rain/wind thresholds, pack tip copy, feedback lines, and widget refresh timing **without** a new App Store binary.
+
+- iOS fetches `WEARTHER_CONFIG_URL` from Info.plist (defaults to the GitHub raw JSON on `main`)
+- Web fetches `/api/config`
+- Values are cached ~60 minutes (see `timing.configCacheMinutes`)
+
+Native UI / Swift code still requires Archive + TestFlight.
+
 ## Weather API key
 
 In `Wearther/Info.plist`:
