@@ -132,19 +132,21 @@ enum FitCopy {
     }
 
     /// One-glance decision line under the outfit title (canvas: warm now / layer later).
+    /// Never dump the long humidity/wind “why” strip here — that lives behind Why?.
     static func decisionSubtitle(outfit: OutfitRecommendation, weather: WeatherData) -> String {
-        if let detail = outfit.whyDetail, !detail.isEmpty {
-            let first = detail.split(separator: ".").first.map(String.init)?
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            if let first, !first.isEmpty {
-                return first.hasSuffix(".") ? first : "\(first)."
+        if outfit.bringLater != nil || packLaneItems(outfit: outfit, weather: weather).isEmpty == false {
+            if weather.feelsLike >= 70, weather.high - weather.low >= 10 || outfit.bringLater != nil {
+                return "It is warm now, but you will want a layer after dinner."
             }
-        }
-        if outfit.bringLater != nil {
-            return "It is warm now, but you will want a layer after dinner."
         }
         if weather.precipitationChance >= 40 {
             return "Rain is in play — dress for now and keep a shell handy."
+        }
+        if weather.feelsLike >= 82 {
+            return "Hot out — keep it light and breathable."
+        }
+        if weather.feelsLike <= 45 {
+            return "Cold enough that a real outer layer matters."
         }
         return shortExplanation(outfit)
     }

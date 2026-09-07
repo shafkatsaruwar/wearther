@@ -3,6 +3,7 @@ import SwiftUI
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
     @State private var selectedItem: ClothingInfo?
+    @State private var showWhy = false
 
     var body: some View {
         NavigationStack {
@@ -49,6 +50,11 @@ struct HomeView: View {
             }
             .sheet(isPresented: $viewModel.isOccasionPickerOpen) {
                 occasionPickerSheet
+            }
+            .sheet(isPresented: $showWhy) {
+                if let weather = viewModel.weather, let outfit = viewModel.outfit {
+                    whySheet(weather: weather, outfit: outfit)
+                }
             }
         }
         .preferredColorScheme(.light)
@@ -97,6 +103,38 @@ struct HomeView: View {
             }
         }
         .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+
+    private func whySheet(weather: WeatherData, outfit: OutfitRecommendation) -> some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(FitCopy.whyDetail(weather: weather, outfit: outfit))
+                        .font(AppFont.body)
+                        .foregroundStyle(AppTheme.inkSoft)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    if let explanation = Optional(outfit.explanation), !explanation.isEmpty {
+                        Text(explanation)
+                            .font(AppFont.subheadline)
+                            .foregroundStyle(AppTheme.inkMuted)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(24)
+            }
+            .background(AppTheme.cream.ignoresSafeArea())
+            .navigationTitle("Why this fit")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { showWhy = false }
+                }
+            }
+        }
+        .presentationDetents([.medium])
         .presentationDragIndicator(.visible)
     }
 
@@ -201,6 +239,21 @@ struct HomeView: View {
                     .font(AppFont.subheadline)
                     .foregroundStyle(AppTheme.inkSoft)
                     .fixedSize(horizontal: false, vertical: true)
+
+                Button {
+                    showWhy = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("Why?")
+                            .font(AppFont.subheadlineMedium)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                    .foregroundStyle(AppTheme.accent)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 2)
+                .accessibilityLabel("Why this fit")
             }
 
             // NOW / BRING — equal height side-by-side cards
