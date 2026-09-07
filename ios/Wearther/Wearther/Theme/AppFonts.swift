@@ -38,9 +38,12 @@ enum AppFont {
             }
             var error: Unmanaged<CFError>?
             if !CTFontManagerRegisterFontsForURL(url as CFURL, .process, &error) {
-                // Already registered is fine; anything else is worth logging.
-                if let error {
-                    print("[Wearther] Font register warning for \(name): \(error.takeUnretainedValue())")
+                // Code 105 = already registered via UIAppFonts — ignore.
+                if let cfError = error?.takeUnretainedValue() {
+                    let ns = cfError as Error as NSError
+                    if ns.domain != "com.apple.CoreText.CTFontManagerErrorDomain" || ns.code != 105 {
+                        print("[Wearther] Font register warning for \(name): \(cfError)")
+                    }
                 }
             }
         }

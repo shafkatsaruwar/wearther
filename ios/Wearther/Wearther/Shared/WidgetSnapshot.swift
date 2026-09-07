@@ -2,7 +2,9 @@ import Foundation
 import WidgetKit
 
 enum WeartherAppGroup {
-    static let id = "group.com.wearther.app"
+    /// Must match both target entitlements. Unique to this Apple team —
+    /// `group.com.wearther.app` is not available for registration.
+    static let id = "group.com.shafkatsaruwar.wearther"
     static let snapshotKey = "wearther:widget-snapshot"
 
     static var defaults: UserDefaults {
