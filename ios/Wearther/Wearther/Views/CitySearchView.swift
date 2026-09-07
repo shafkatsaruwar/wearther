@@ -70,6 +70,7 @@ struct CitySearchView: View {
         .presentationDragIndicator(.visible)
     }
 
+    @ViewBuilder
     private var locateRow: some View {
         Button {
             viewModel.locateMe()
