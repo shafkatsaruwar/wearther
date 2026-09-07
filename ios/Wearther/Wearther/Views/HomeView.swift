@@ -205,22 +205,24 @@ struct HomeView: View {
                         .tracking(1.6)
                         .foregroundStyle(AppTheme.accent)
 
-                    Button {
-                        viewModel.isOccasionPickerOpen = true
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(viewModel.occasion.pillLabel)
-                                .font(AppFont.captionSemibold)
-                            Image(systemName: "chevron.down")
-                                .font(.system(size: 9, weight: .bold))
+                    if RemoteConfigStore.current.flags.enableOccasionPicker {
+                        Button {
+                            viewModel.isOccasionPickerOpen = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text(viewModel.occasion.pillLabel)
+                                    .font(AppFont.captionSemibold)
+                                Image(systemName: "chevron.down")
+                                    .font(.system(size: 9, weight: .bold))
+                            }
+                            .foregroundStyle(AppTheme.accent)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Capsule().fill(AppTheme.mint))
                         }
-                        .foregroundStyle(AppTheme.accent)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(Capsule().fill(AppTheme.mint))
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Today's context, \(viewModel.occasion.pillLabel)")
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Today's context, \(viewModel.occasion.pillLabel)")
 
                     Spacer(minLength: 8)
 
@@ -280,20 +282,22 @@ struct HomeView: View {
             Spacer(minLength: 12)
 
             // Trip is separate — one small entry
-            HStack {
-                Text("Planning a trip?")
-                    .font(AppFont.caption)
-                    .foregroundStyle(AppTheme.inkMuted)
-                Spacer(minLength: 8)
-                NavigationLink {
-                    TripPackScreen()
-                } label: {
-                    Text("Open Trip Pack")
-                        .font(AppFont.subheadlineMedium)
-                        .underline()
-                        .foregroundStyle(AppTheme.accent)
+            if RemoteConfigStore.current.flags.enableTripPack {
+                HStack {
+                    Text("Planning a trip?")
+                        .font(AppFont.caption)
+                        .foregroundStyle(AppTheme.inkMuted)
+                    Spacer(minLength: 8)
+                    NavigationLink {
+                        TripPackScreen()
+                    } label: {
+                        Text("Open Trip Pack")
+                            .font(AppFont.subheadlineMedium)
+                            .underline()
+                            .foregroundStyle(AppTheme.accent)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
 
             // Feedback sits at the bottom of the filled board
