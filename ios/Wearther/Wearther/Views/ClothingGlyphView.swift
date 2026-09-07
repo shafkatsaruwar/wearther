@@ -2,10 +2,11 @@ import SwiftUI
 
 struct ClothingGlyphView: View {
     let label: String
+    var size: CGFloat = 22
 
     var body: some View {
         Image(systemName: symbolName)
-            .font(.system(size: 22, weight: .medium))
+            .font(.system(size: size, weight: .medium))
             .foregroundStyle(AppTheme.inkSoft)
     }
 

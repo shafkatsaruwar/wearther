@@ -54,6 +54,8 @@
 	<string>open-meteo</string>
 	<key>OPENWEATHER_API_KEY</key>
 	<string></string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Wearther uses your location to recommend what to wear where you are.</string>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>Wearther sends a short morning outfit nudge so you know what to wear before you leave.</string>
 	<key>NSAppTransportSecurity</key>

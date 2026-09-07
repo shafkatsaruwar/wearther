@@ -17,9 +17,12 @@ final class HomeViewModel: ObservableObject {
     @Published var isCityPickerOpen = false
     @Published var isCustomizeOpen = false
     @Published var savedCities: [LocationResult] = []
+    @Published var isLocating = false
+    @Published var locateErrorMessage: String?
 
     private var searchTask: Task<Void, Never>?
     private var loadTask: Task<Void, Never>?
+    private var locateTask: Task<Void, Never>?
 
     init() {
         location = ComfortStore.loadSavedLocation()
@@ -74,7 +77,26 @@ final class HomeViewModel: ObservableObject {
         isCityPickerOpen = false
         searchQuery = ""
         searchResults = []
+        locateErrorMessage = nil
         Task { await refreshWeather() }
+    }
+
+    func locateMe() {
+        locateTask?.cancel()
+        locateTask = Task {
+            isLocating = true
+            locateErrorMessage = nil
+            do {
+                let place = try await LocationService.shared.locateCurrentPlace()
+                guard !Task.isCancelled else { return }
+                selectLocation(place)
+            } catch {
+                guard !Task.isCancelled else { return }
+                locateErrorMessage = (error as? LocalizedError)?.errorDescription
+                    ?? "Couldn’t find your location."
+            }
+            isLocating = false
+        }
     }
 
     func isSaved(_ loc: LocationResult) -> Bool {

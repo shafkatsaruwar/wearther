@@ -4,58 +4,104 @@ struct CitySearchView: View {
     @ObservedObject var viewModel: HomeViewModel
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Button {
-                withAnimation(.easeOut(duration: 0.2)) {
-                    viewModel.isCityPickerOpen.toggle()
-                }
-            } label: {
-                HStack(spacing: 6) {
-                    Text(viewModel.location.name)
-                        .font(AppFont.cityName)
-                        .foregroundStyle(AppTheme.ink)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                    Image(systemName: "chevron.down")
-                        .font(AppFont.captionSemibold)
-                        .foregroundStyle(AppTheme.inkMuted)
-                        .padding(.top, 6)
-                }
-                .frame(minHeight: 44, alignment: .center)
-                .contentShape(Rectangle())
+        Button {
+            withAnimation(.easeOut(duration: 0.2)) {
+                viewModel.isCityPickerOpen.toggle()
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Selected city \(viewModel.location.name). Change city")
-
-            if viewModel.isCityPickerOpen {
-                VStack(spacing: 0) {
-                    TextField("Search city…", text: Binding(
-                        get: { viewModel.searchQuery },
-                        set: { viewModel.updateSearchQuery($0) }
-                    ))
-                    .textFieldStyle(.plain)
-                    .font(AppFont.body)
-                    .padding(12)
+        } label: {
+            HStack(spacing: 6) {
+                Text(viewModel.location.name)
+                    .font(AppFont.display(26))
                     .foregroundStyle(AppTheme.ink)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                Image(systemName: viewModel.isCityPickerOpen ? "chevron.up" : "chevron.down")
+                    .font(AppFont.captionSemibold)
+                    .foregroundStyle(AppTheme.inkMuted)
+                    .padding(.top, 4)
+            }
+            .frame(minHeight: 40, alignment: .center)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Selected city \(viewModel.location.name). Change city")
+        .sheet(isPresented: Binding(
+            get: { viewModel.isCityPickerOpen },
+            set: { viewModel.isCityPickerOpen = $0 }
+        )) {
+            cityPickerSheet
+        }
+    }
 
-                    Divider()
+    private var cityPickerSheet: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                TextField("Search city…", text: Binding(
+                    get: { viewModel.searchQuery },
+                    set: { viewModel.updateSearchQuery($0) }
+                ))
+                .textFieldStyle(.plain)
+                .font(AppFont.body)
+                .padding(14)
+                .background(AppTheme.surfaceHover)
 
-                    ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 0) {
-                            savedSection
-                            searchSection
-                        }
+                Divider()
+
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 0) {
+                        locateRow
+                        savedSection
+                        searchSection
                     }
-                    .frame(maxHeight: 320)
                 }
-                .background(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .fill(AppTheme.surfaceHover)
-                )
-                .padding(.top, 12)
-                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+            .background(AppTheme.cream.ignoresSafeArea())
+            .navigationTitle("Location")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        viewModel.isCityPickerOpen = false
+                    }
+                }
             }
         }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+
+    private var locateRow: some View {
+        Button {
+            viewModel.locateMe()
+        } label: {
+            HStack(spacing: 10) {
+                if viewModel.isLocating {
+                    ProgressView()
+                        .controlSize(.small)
+                } else {
+                    Image(systemName: "location.fill")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(AppTheme.accent)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Locate Me")
+                        .font(AppFont.subheadlineMedium)
+                        .foregroundStyle(AppTheme.ink)
+                    Text("Use your current location")
+                        .font(AppFont.caption)
+                        .foregroundStyle(AppTheme.inkMuted)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .disabled(viewModel.isLocating)
+        .accessibilityLabel("Locate Me")
+
+        Divider()
     }
 
     @ViewBuilder

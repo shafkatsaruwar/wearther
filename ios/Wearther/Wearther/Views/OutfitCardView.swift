@@ -135,7 +135,7 @@ struct OutfitCardView: View {
     }
 }
 
-private struct ClothingInfoSheet: View {
+struct ClothingInfoSheet: View {
     let info: ClothingInfo
     @Environment(\.dismiss) private var dismiss
 

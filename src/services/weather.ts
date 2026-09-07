@@ -85,4 +85,56 @@ export async function searchCities(query: string): Promise<LocationResult[]> {
   }
 }
 
+export async function reverseGeocode(
+  latitude: number,
+  longitude: number,
+): Promise<LocationResult> {
+  try {
+    const params = new URLSearchParams({
+      latitude: String(latitude),
+      longitude: String(longitude),
+      language: "en",
+      format: "json",
+      count: "1",
+    });
+    const res = await fetch(
+      `https://geocoding-api.open-meteo.com/v1/reverse?${params}`,
+    );
+    if (res.ok) {
+      const data = (await res.json()) as {
+        results?: Array<{
+          id: number;
+          name: string;
+          admin1?: string;
+          country?: string;
+          latitude: number;
+          longitude: number;
+        }>;
+      };
+      const first = data.results?.[0];
+      if (first) {
+        return {
+          id: `near-${first.id}`,
+          name: first.name,
+          region: first.admin1,
+          country: first.country ?? "Unknown",
+          latitude: first.latitude,
+          longitude: first.longitude,
+        };
+      }
+    }
+  } catch (error) {
+    console.warn("[Wearther] Reverse geocode failed.", error);
+  }
+
+  return {
+    id: `near-me-${Math.round(latitude * 100)}-${Math.round(longitude * 100)}`,
+    name: "Near Me",
+    region: undefined,
+    country: "Current location",
+    latitude,
+    longitude,
+  };
+}
+
 export type { WeatherData, LocationResult, HourlyWeather } from "@/types/weather";

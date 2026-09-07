@@ -40,7 +40,8 @@ struct SmallFitWidgetView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .containerBackground(for: .widget) {
+        .padding(14)
+        .widgetPanelBackground {
             WidgetPalette.deepTeal
         }
     }
@@ -118,12 +119,16 @@ struct MediumFitWidgetView: View {
                     .frame(width: 36, height: 36)
                 }
             }
-            .frame(width: 44)
+            .frame(width: 40)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .containerBackground(for: .widget) {
+        .padding(14)
+        .widgetPanelBackground {
             LinearGradient(
-                colors: [WidgetPalette.deepTeal, WidgetPalette.sage],
+                colors: [
+                    WidgetPalette.deepTeal,
+                    Color(red: 0.055, green: 0.34, blue: 0.31),
+                ],
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -211,9 +216,24 @@ struct LargeFitWidgetView: View {
             Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .containerBackground(for: .widget) {
+        .padding(16)
+        .widgetPanelBackground {
             WidgetPalette.cream
         }
+    }
+}
+
+private extension View {
+    /// Edge-to-edge fill that follows the system widget mask, so corners stay
+    /// rounded on every side instead of reading as a stretched rectangle.
+    func widgetPanelBackground<Background: View>(
+        @ViewBuilder _ background: () -> Background
+    ) -> some View {
+        self
+            .containerBackground(for: .widget) {
+                background()
+            }
+            .clipShape(ContainerRelativeShape())
     }
 }
 
