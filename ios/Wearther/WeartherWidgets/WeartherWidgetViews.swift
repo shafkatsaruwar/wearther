@@ -51,78 +51,64 @@ struct MediumFitWidgetView: View {
     let snapshot: WidgetSnapshot
 
     var body: some View {
-        HStack(alignment: .top, spacing: 14) {
-            VStack(alignment: .leading, spacing: 8) {
+        HStack(alignment: .center, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(snapshot.locationDateLabel)
-                    .font(WidgetPalette.sans(11, weight: .semibold))
-                    .tracking(0.4)
+                    .font(WidgetPalette.sans(10, weight: .semibold))
+                    .tracking(0.3)
                     .foregroundStyle(WidgetPalette.cream.opacity(0.7))
                     .lineLimit(1)
 
-                Text(snapshot.outfitTitle)
-                    .font(WidgetPalette.display(26))
+                Text(snapshot.shortOutfitTitle)
+                    .font(WidgetPalette.display(22))
                     .foregroundStyle(WidgetPalette.cream)
-                    .minimumScaleFactor(0.7)
-                    .lineLimit(3)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .minimumScaleFactor(0.65)
+                    .lineLimit(2)
 
                 Text(snapshot.confidenceLabel)
-                    .font(WidgetPalette.sans(11, weight: .semibold))
+                    .font(WidgetPalette.sans(10, weight: .semibold))
                     .foregroundStyle(WidgetPalette.sun)
                     .lineLimit(1)
 
-                Spacer(minLength: 4)
+                Spacer(minLength: 0)
 
-                HStack(spacing: 10) {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Text(snapshot.temperatureLabel)
-                        .font(WidgetPalette.display(28, weight: .regular))
+                        .font(WidgetPalette.display(24, weight: .regular))
                         .foregroundStyle(WidgetPalette.cream)
+                        .lineLimit(1)
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(snapshot.windLabel)
-                            .font(WidgetPalette.sans(12, weight: .medium))
-                            .foregroundStyle(WidgetPalette.cream.opacity(0.8))
-                        Text(snapshot.condition)
-                            .font(WidgetPalette.sans(12, weight: .medium))
-                            .foregroundStyle(WidgetPalette.cream.opacity(0.7))
-                            .lineLimit(1)
-                    }
+                    Text(snapshot.windLabel)
+                        .font(WidgetPalette.sans(11, weight: .medium))
+                        .foregroundStyle(WidgetPalette.cream.opacity(0.8))
+                        .lineLimit(1)
                 }
 
                 if snapshot.isStale {
                     Text(snapshot.updatedLabel)
                         .font(WidgetPalette.sans(9, weight: .medium))
                         .foregroundStyle(WidgetPalette.cream.opacity(0.5))
+                        .lineLimit(1)
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
 
-            Spacer(minLength: 0)
-
-            VStack(spacing: 10) {
-                Image("BrandMark")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 28, height: 28)
-                    .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-
-                Spacer(minLength: 0)
-
+            VStack(spacing: 6) {
                 ForEach(Array(snapshot.itemSymbols.prefix(3).enumerated()), id: \.offset) { _, symbol in
                     ZStack {
                         Circle()
                             .fill(WidgetPalette.cream.opacity(0.14))
                         Image(systemName: symbol)
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 12, weight: .semibold))
                             .foregroundStyle(WidgetPalette.cream)
                     }
-                    .frame(width: 36, height: 36)
+                    .frame(width: 30, height: 30)
                 }
             }
-            .frame(width: 40)
+            .frame(maxHeight: .infinity, alignment: .center)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-        .padding(14)
+        .padding(12)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .widgetPanelBackground {
             LinearGradient(
                 colors: [
@@ -224,16 +210,14 @@ struct LargeFitWidgetView: View {
 }
 
 private extension View {
-    /// Edge-to-edge fill that follows the system widget mask, so corners stay
-    /// rounded on every side instead of reading as a stretched rectangle.
+    /// System widget chrome fills edge-to-edge; content stays inside margins.
+    /// Avoid clipping the content view — that was cutting off title/icons.
     func widgetPanelBackground<Background: View>(
         @ViewBuilder _ background: () -> Background
     ) -> some View {
-        self
-            .containerBackground(for: .widget) {
-                background()
-            }
-            .clipShape(ContainerRelativeShape())
+        self.containerBackground(for: .widget) {
+            background()
+        }
     }
 }
 
