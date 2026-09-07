@@ -111,10 +111,30 @@ struct HomeView: View {
 
         return VStack(alignment: .leading, spacing: 0) {
             if let locateError = viewModel.locateErrorMessage {
-                Text(locateError)
-                    .font(AppFont.caption)
-                    .foregroundStyle(AppTheme.coral)
-                    .padding(.bottom, 8)
+                HStack(alignment: .top, spacing: 8) {
+                    Text(locateError)
+                        .font(AppFont.caption)
+                        .foregroundStyle(AppTheme.coral)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    Button {
+                        viewModel.locateErrorMessage = nil
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundStyle(AppTheme.coral.opacity(0.8))
+                            .frame(width: 28, height: 28)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Dismiss")
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(AppTheme.coral.opacity(0.1))
+                )
+                .padding(.bottom, 10)
             }
 
             // Fit
@@ -144,35 +164,41 @@ struct HomeView: View {
                 .lineLimit(2)
                 .padding(.top, 6)
 
-            // Pieces
-            HStack(spacing: 8) {
+            // Clothing pieces — clear icon tiles (not tiny truncated chips)
+            HStack(alignment: .top, spacing: 10) {
                 ForEach(Array(outfit.items.prefix(3)), id: \.self) { item in
                     let info = ClothingInfoProvider.info(for: item, weather: weather)
                     Button {
                         selectedItem = info
                     } label: {
-                        HStack(spacing: 6) {
-                            ClothingGlyphView(label: item, size: 13)
-                                .foregroundStyle(AppTheme.accent)
-                            Text(item)
+                        VStack(spacing: 8) {
+                            ZStack {
+                                Circle()
+                                    .fill(AppTheme.fitIconBg)
+                                    .frame(width: 56, height: 56)
+                                ClothingGlyphView(label: item, size: 22)
+                                    .foregroundStyle(AppTheme.accent)
+                            }
+                            Text(info.name)
                                 .font(AppFont.captionSemibold)
                                 .foregroundStyle(AppTheme.ink)
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.85)
+                            Text(info.subtitle)
+                                .font(AppFont.caption2)
+                                .foregroundStyle(AppTheme.inkMuted)
+                                .multilineTextAlignment(.center)
                                 .lineLimit(1)
-                                .minimumScaleFactor(0.8)
                         }
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
                         .frame(maxWidth: .infinity)
-                        .background(
-                            Capsule(style: .continuous)
-                                .fill(AppTheme.fitIconBg)
-                        )
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Learn about \(item)")
+                    .accessibilityLabel("Learn about \(info.name)")
                 }
             }
-            .padding(.top, 14)
+            .padding(.top, 16)
 
             // Weather + pack — one quiet block
             VStack(alignment: .leading, spacing: 4) {
@@ -219,7 +245,7 @@ struct HomeView: View {
                         .foregroundStyle(AppTheme.coral)
                 }
             }
-            .padding(.top, 16)
+            .padding(.top, 14)
 
             // Later + tomorrow — single text strip
             if !weather.hourly.isEmpty || weather.daily.count > 1 {
@@ -240,10 +266,10 @@ struct HomeView: View {
                         .lineLimit(1)
                     }
                 }
-                .padding(.top, 12)
+                .padding(.top, 10)
             }
 
-            Spacer(minLength: 10)
+            Spacer(minLength: 8)
 
             // Why + trip — tertiary
             HStack(spacing: 16) {
@@ -267,14 +293,15 @@ struct HomeView: View {
 
                 Spacer(minLength: 0)
             }
+            .padding(.top, 4)
 
-            // Feedback — bottom of the one board
+            // Feedback
             compactFeedback
-                .padding(.top, 14)
+                .padding(.top, 12)
         }
         .padding(.horizontal, 18)
-        .padding(.top, 18)
-        .padding(.bottom, 16)
+        .padding(.top, 16)
+        .padding(.bottom, 14)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 28, style: .continuous)

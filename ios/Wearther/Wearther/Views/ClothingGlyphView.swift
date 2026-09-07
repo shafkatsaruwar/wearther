@@ -7,7 +7,6 @@ struct ClothingGlyphView: View {
     var body: some View {
         Image(systemName: symbolName)
             .font(.system(size: size, weight: .medium))
-            .foregroundStyle(AppTheme.inkSoft)
     }
 
     private var symbolName: String {

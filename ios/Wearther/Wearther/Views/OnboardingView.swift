@@ -12,6 +12,8 @@ struct OnboardingView: View {
     @State private var isSearching = false
     @State private var savedPicks: [LocationResult] = [MockWeatherProvider.defaultCity]
     @State private var searchTask: Task<Void, Never>?
+    @State private var isLocating = false
+    @State private var locateError: String?
 
     var body: some View {
         ZStack {
@@ -105,9 +107,51 @@ struct OnboardingView: View {
                 .foregroundStyle(AppTheme.ink)
                 .padding(.top, 28)
 
-            Text("Choose a home city. Bookmark extras to flip between them later.")
+            Text("Choose a home city — or locate where you are. Bookmark extras to flip between them later.")
                 .font(AppFont.body)
                 .foregroundStyle(AppTheme.inkSoft)
+
+            Button {
+                locateMe()
+            } label: {
+                HStack(spacing: 10) {
+                    if isLocating {
+                        ProgressView()
+                            .controlSize(.small)
+                    } else {
+                        Image(systemName: "location.fill")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Locate Me")
+                            .font(AppFont.subheadlineMedium)
+                        Text("Use your current location")
+                            .font(AppFont.caption)
+                            .foregroundStyle(AppTheme.inkMuted)
+                    }
+                    Spacer(minLength: 0)
+                }
+                .foregroundStyle(AppTheme.accent)
+                .padding(14)
+                .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(AppTheme.mint.opacity(0.85))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .stroke(AppTheme.accent.opacity(0.2), lineWidth: 1)
+                        )
+                )
+            }
+            .buttonStyle(.plain)
+            .disabled(isLocating)
+            .accessibilityLabel("Locate Me")
+
+            if let locateError {
+                Text(locateError)
+                    .font(AppFont.caption)
+                    .foregroundStyle(AppTheme.coral)
+            }
 
             TextField("Search city…", text: $searchQuery)
                 .textFieldStyle(.plain)
@@ -321,6 +365,26 @@ struct OnboardingView: View {
             }
             .buttonStyle(.plain)
             .accessibilityLabel(saved ? "Remove \(city.name) from saved cities" : "Save \(city.name)")
+        }
+    }
+
+    private func locateMe() {
+        isLocating = true
+        locateError = nil
+        Task {
+            do {
+                let place = try await LocationService.shared.locateCurrentPlace()
+                selectedCity = place
+                if !savedPicks.contains(where: { $0.id == place.id }) {
+                    savedPicks.insert(place, at: 0)
+                }
+                searchQuery = ""
+                searchResults = []
+            } catch {
+                locateError = (error as? LocalizedError)?.errorDescription
+                    ?? "Couldn’t find your location."
+            }
+            isLocating = false
         }
     }
 
