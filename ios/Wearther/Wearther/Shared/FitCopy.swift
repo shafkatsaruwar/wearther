@@ -20,13 +20,14 @@ enum FitConfidence: String, Equatable {
 
 enum FitCopy {
     static func formatTitle(_ outfit: OutfitRecommendation) -> String {
+        let jacketOptions: String.CompareOptions = [.regularExpression, .caseInsensitive]
         let hasJacket = outfit.items.contains {
-            $0.range(of: "jacket|coat|bring", options: .regularExpression) != nil
+            $0.range(of: "jacket|coat|bring", options: jacketOptions) != nil
         }
-        if hasJacket || outfit.title.range(of: "jacket|coat|bring", options: .regularExpression) != nil {
+        if hasJacket || outfit.title.range(of: "jacket|coat|bring", options: jacketOptions) != nil {
             return outfit.title
         }
-        if outfit.title.range(of: "no jacket", options: [.regularExpression, .caseInsensitive]) != nil {
+        if outfit.title.range(of: "no jacket", options: jacketOptions) != nil {
             return outfit.title
         }
         return "\(outfit.title), No Jacket"
