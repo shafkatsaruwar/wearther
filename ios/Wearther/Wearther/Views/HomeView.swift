@@ -28,15 +28,14 @@ struct HomeView: View {
                     } else if let error = viewModel.errorMessage, viewModel.weather == nil {
                         errorState(error)
                     } else if let weather = viewModel.weather, let outfit = viewModel.outfit {
-                        // Canvas spine: one glance, answer first
-                        ScrollView(showsIndicators: false) {
-                            decisionSpine(weather: weather, outfit: outfit)
-                                .padding(.horizontal, 16)
-                                .padding(.bottom, 16)
-                        }
-                        .refreshable {
-                            await viewModel.refreshWeather(showFullLoading: false)
-                        }
+                        // Fill the viewport so the bottom doesn’t read as empty atmosphere.
+                        decisionSpine(weather: weather, outfit: outfit)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 12)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                            .refreshable {
+                                await viewModel.refreshWeather(showFullLoading: false)
+                            }
                     }
                 }
             }
