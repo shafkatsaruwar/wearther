@@ -277,6 +277,8 @@ struct HomeView: View {
             // Weather proof
             weatherProof(weather: weather, units: units)
 
+            Spacer(minLength: 12)
+
             // Trip is separate — one small entry
             HStack {
                 Text("Planning a trip?")
@@ -293,16 +295,15 @@ struct HomeView: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.top, 2)
 
-            // Feedback
+            // Feedback sits at the bottom of the filled board
             feedbackBlock
-                .padding(.top, 4)
+                .padding(.top, 6)
         }
         .padding(.horizontal, 16)
         .padding(.top, 14)
         .padding(.bottom, 16)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(
             RoundedRectangle(cornerRadius: 28, style: .continuous)
                 .fill(AppTheme.fitSurface)
