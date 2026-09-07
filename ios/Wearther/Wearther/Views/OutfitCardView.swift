@@ -2,14 +2,17 @@ import SwiftUI
 
 struct OutfitCardView: View {
     let outfit: OutfitRecommendation
+    let weather: WeatherData
     let comfort: ComfortPreference
+
+    @State private var showWhy = false
 
     private var displayTitle: String {
         FitCopy.formatTitle(outfit)
     }
 
-    private var confidence: String {
-        FitCopy.confidenceLabel(comfort)
+    private var confidence: FitConfidence {
+        FitCopy.confidence(outfit: outfit, weather: weather, comfort: comfort)
     }
 
     var body: some View {
@@ -23,15 +26,21 @@ struct OutfitCardView: View {
                 Spacer(minLength: 8)
 
                 HStack(spacing: 4) {
-                    Image(systemName: "checkmark")
+                    Image(systemName: confidence.systemImage)
                         .font(.system(size: 10, weight: .bold))
-                    Text(confidence)
+                    Text(confidence.rawValue)
                         .font(AppFont.captionSemibold)
                 }
-                .foregroundStyle(AppTheme.accent)
+                .foregroundStyle(confidence == .rainRisk || confidence == .eveningDrop ? AppTheme.coral : AppTheme.accent)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(Capsule().fill(AppTheme.mint))
+                .background(
+                    Capsule().fill(
+                        confidence == .rainRisk || confidence == .eveningDrop
+                            ? AppTheme.coral.opacity(0.14)
+                            : AppTheme.mint
+                    )
+                )
             }
 
             Text(displayTitle)
@@ -61,24 +70,43 @@ struct OutfitCardView: View {
             }
             .padding(.top, 28)
 
-            HStack(alignment: .top, spacing: 10) {
-                Image(systemName: "sun.max")
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(AppTheme.accent)
-                    .padding(.top, 2)
+            Text(FitCopy.shortExplanation(outfit))
+                .font(AppFont.body)
+                .foregroundStyle(AppTheme.inkSoft)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 24)
 
-                Text(outfit.explanation)
-                    .font(AppFont.body)
-                    .foregroundStyle(AppTheme.inkSoft)
-                    .fixedSize(horizontal: false, vertical: true)
+            Button {
+                withAnimation(.easeOut(duration: 0.2)) {
+                    showWhy.toggle()
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Text("Why?")
+                        .font(AppFont.subheadlineMedium)
+                    Image(systemName: showWhy ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 11, weight: .semibold))
+                    Spacer()
+                }
+                .foregroundStyle(AppTheme.accent)
+                .frame(minHeight: 44)
             }
-            .padding(14)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(AppTheme.mint)
-            )
-            .padding(.top, 28)
+            .buttonStyle(.plain)
+            .padding(.top, 4)
+
+            if showWhy {
+                Text(FitCopy.whyDetail(weather: weather, outfit: outfit))
+                    .font(AppFont.caption)
+                    .foregroundStyle(AppTheme.inkMuted)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(14)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(AppTheme.mint)
+                    )
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
         .padding(.horizontal, 22)
         .padding(.vertical, 24)

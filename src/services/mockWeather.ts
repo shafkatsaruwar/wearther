@@ -177,6 +177,7 @@ function mockForCity(name: string): WeatherData {
     units: "imperial",
     hourly: buildHourly(base.temperature, base.feelsLike),
     fetchedAt: new Date().toISOString(),
+    isMock: true,
   };
 }
 

@@ -6,7 +6,9 @@ final class HomeViewModel: ObservableObject {
     @Published var weather: WeatherData?
     @Published var outfit: OutfitRecommendation?
     @Published var comfort: ComfortPreference
+    @Published var notifications: NotificationPreference
     @Published var isLoading = true
+    @Published var isRefreshing = false
     @Published var errorMessage: String?
 
     @Published var searchQuery = ""
@@ -32,6 +34,7 @@ final class HomeViewModel: ObservableObject {
     init() {
         location = ComfortStore.loadSavedLocation()
         comfort = ComfortStore.loadComfortPreference()
+        notifications = ComfortStore.loadNotificationPreference()
         savedCities = ComfortStore.loadSavedCities()
     }
 
@@ -39,10 +42,15 @@ final class HomeViewModel: ObservableObject {
         Task { await refreshWeather() }
     }
 
-    func refreshWeather() async {
+    func refreshWeather(showFullLoading: Bool? = nil) async {
         loadTask?.cancel()
         loadTask = Task {
-            isLoading = true
+            let fullScreen = showFullLoading ?? (weather == nil)
+            if fullScreen {
+                isLoading = true
+            } else {
+                isRefreshing = true
+            }
             errorMessage = nil
 
             let data = await WeatherService.getWeather(for: location)
@@ -58,7 +66,14 @@ final class HomeViewModel: ObservableObject {
                 outfit: recommendation,
                 comfort: comfort
             )
+            await MorningNotificationScheduler.reschedule(
+                preference: notifications,
+                locationName: location.name,
+                weather: data,
+                outfit: recommendation
+            )
             isLoading = false
+            isRefreshing = false
         }
         await loadTask?.value
     }
@@ -112,6 +127,29 @@ final class HomeViewModel: ObservableObject {
         comfort.units = value
         comfort.updatedAt = ISO8601DateFormatter().string(from: Date())
         ComfortStore.saveComfortPreference(comfort)
+        if let weather, let outfit {
+            WidgetSnapshotStore.saveFromApp(
+                location: location,
+                weather: weather,
+                outfit: outfit,
+                comfort: comfort
+            )
+        }
+    }
+
+    func updateNotifications(enabled: Bool? = nil, hour: MorningNotifyHour? = nil, weekdaysOnly: Bool? = nil) {
+        if let enabled { notifications.enabled = enabled }
+        if let hour { notifications.hour = hour }
+        if let weekdaysOnly { notifications.weekdaysOnly = weekdaysOnly }
+        ComfortStore.saveNotificationPreference(notifications)
+        Task {
+            await MorningNotificationScheduler.reschedule(
+                preference: notifications,
+                locationName: location.name,
+                weather: weather,
+                outfit: outfit
+            )
+        }
     }
 
     func updateSearchQuery(_ query: String) {
@@ -208,6 +246,14 @@ final class HomeViewModel: ObservableObject {
                 outfit: recommendation,
                 comfort: comfort
             )
+            Task {
+                await MorningNotificationScheduler.reschedule(
+                    preference: notifications,
+                    locationName: location.name,
+                    weather: weather,
+                    outfit: recommendation
+                )
+            }
         }
     }
 }

@@ -59,6 +59,49 @@ struct CustomizeView: View {
                 .background(AppTheme.fitIconBg)
                 .clipShape(Capsule())
             }
+
+            prefCard(title: "Morning nudge") {
+                VStack(alignment: .leading, spacing: 14) {
+                    packToggle("Daily notification", isOn: viewModel.notifications.enabled) { enabled in
+                        viewModel.updateNotifications(enabled: enabled)
+                    }
+
+                    Text("Time")
+                        .font(AppFont.caption)
+                        .foregroundStyle(AppTheme.inkMuted)
+
+                    HStack(spacing: 8) {
+                        ForEach(MorningNotifyHour.allCases) { hour in
+                            let selected = viewModel.notifications.hour == hour
+                            Button {
+                                viewModel.updateNotifications(hour: hour)
+                            } label: {
+                                Text(hour.label)
+                                    .font(AppFont.subheadline)
+                                    .foregroundStyle(selected ? Color.white : AppTheme.inkSoft)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(minHeight: 44)
+                                    .background(selected ? AppTheme.ink : AppTheme.surface)
+                                    .clipShape(Capsule())
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(!viewModel.notifications.enabled)
+                            .opacity(viewModel.notifications.enabled ? 1 : 0.5)
+                        }
+                    }
+
+                    packToggle("Weekdays only", isOn: viewModel.notifications.weekdaysOnly) {
+                        viewModel.updateNotifications(weekdaysOnly: $0)
+                    }
+                    .disabled(!viewModel.notifications.enabled)
+                    .opacity(viewModel.notifications.enabled ? 1 : 0.5)
+
+                    Text("Example: “Boston is breezy. Long sleeve, no jacket. Pack a light layer after 6 PM.”")
+                        .font(AppFont.caption)
+                        .foregroundStyle(AppTheme.inkMuted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
         }
         .padding(.top, 8)
     }

@@ -1,24 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #e9eef3;
-  --ink: #1a1f24;
-  --ink-soft: #3a424a;
-  --ink-muted: #6a7380;
-  --ink-faint: #98a2ae;
-  --line: rgba(26, 31, 36, 0.08);
-  --surface: rgba(255, 255, 255, 0.72);
-  --surface-hover: rgba(255, 255, 255, 0.92);
-  --fit-surface: rgba(255, 255, 255, 0.78);
-  --fit-icon-bg: rgba(26, 31, 36, 0.04);
-  --accent: #3d6b5e;
-  --glow: rgba(110, 150, 165, 0.32);
-  --glow-2: rgba(130, 150, 140, 0.22);
+  --bg: #e9f1f4;
+  --ink: #172027;
+  --ink-soft: #33423d;
+  --ink-muted: #4d5e56;
+  --ink-faint: #6e8078;
+  --line: rgba(23, 32, 39, 0.1);
+  --surface: rgba(255, 253, 246, 0.86);
+  --surface-hover: rgba(255, 253, 246, 0.96);
+  --fit-surface: #fffdf6;
+  --fit-icon-bg: rgba(11, 79, 73, 0.07);
+  --accent: #0b4f49;
+  --coral: #e56f5b;
+  --mint: #d8eee7;
+  --glow: rgba(11, 79, 73, 0.18);
+  --glow-2: rgba(229, 111, 91, 0.14);
   --atmosphere: linear-gradient(
     165deg,
-    #dde6ee 0%,
-    #e7edf1 45%,
-    #e2e9e6 100%
+    #dfeef5 0%,
+    #e8f2f4 45%,
+    #d8eee7 100%
   );
 }
 
@@ -35,8 +37,10 @@
     --fit-surface: rgba(24, 29, 34, 0.88);
     --fit-icon-bg: rgba(255, 255, 255, 0.05);
     --accent: #7eb8a4;
+    --coral: #e56f5b;
+    --mint: rgba(126, 184, 164, 0.18);
     --glow: rgba(70, 110, 120, 0.28);
-    --glow-2: rgba(90, 80, 60, 0.22);
+    --glow-2: rgba(229, 111, 91, 0.16);
     --atmosphere: linear-gradient(
       165deg,
       #12161a 0%,

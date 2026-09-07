@@ -20,6 +20,7 @@ export interface WeatherData {
   hourly: HourlyWeather[];
   units: "imperial" | "metric";
   fetchedAt: string;
+  isMock?: boolean;
 }
 
 export interface LocationResult {

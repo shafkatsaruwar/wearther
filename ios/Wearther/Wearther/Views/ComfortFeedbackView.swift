@@ -41,13 +41,16 @@ struct ComfortFeedbackView: View {
                 }
             }
 
-            if lastFeedback != nil {
-                Text("Saved locally — future fits will adapt slightly.")
-                    .font(AppFont.caption2)
-                    .foregroundStyle(AppTheme.inkFaint)
+            if let lastFeedback {
+                Text(FitCopy.feedbackResponse(lastFeedback))
+                    .font(AppFont.subheadlineMedium)
+                    .foregroundStyle(AppTheme.accent)
+                    .multilineTextAlignment(.center)
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
         }
         .padding(.top, 8)
+        .animation(.easeOut(duration: 0.2), value: lastFeedback)
     }
 
     private func foreground(selected: Bool, primary: Bool) -> Color {

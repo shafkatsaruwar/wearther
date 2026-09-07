@@ -5,6 +5,7 @@ enum ComfortStore {
     private static let locationKey = "wearther:selected-location"
     private static let savedCitiesKey = "wearther:saved-cities"
     private static let onboardingKey = "wearther:onboarding-complete"
+    private static let notificationKey = "wearther:notification-preference"
 
     static func loadComfortPreference() -> ComfortPreference {
         guard let data = UserDefaults.standard.data(forKey: comfortKey) else {
@@ -141,6 +142,20 @@ enum ComfortStore {
         cities.insert(location, at: 0)
         saveSavedCities(cities)
         return cities
+    }
+
+    static func loadNotificationPreference() -> NotificationPreference {
+        guard let data = UserDefaults.standard.data(forKey: notificationKey),
+              let pref = try? JSONDecoder().decode(NotificationPreference.self, from: data)
+        else {
+            return .default
+        }
+        return pref
+    }
+
+    static func saveNotificationPreference(_ pref: NotificationPreference) {
+        guard let data = try? JSONEncoder().encode(pref) else { return }
+        UserDefaults.standard.set(data, forKey: notificationKey)
     }
 
     private static func clamp(_ value: Double, min: Double, max: Double) -> Double {

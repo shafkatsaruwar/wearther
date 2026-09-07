@@ -99,4 +99,50 @@ struct OutfitRecommendation: Equatable {
     let explanation: String
     let warmthLevel: Double
     let bringLater: String?
+    /// Expandable “Why?” detail; optional for back-compat with older call sites.
+    let whyDetail: String?
+
+    init(
+        title: String,
+        items: [String],
+        explanation: String,
+        warmthLevel: Double,
+        bringLater: String? = nil,
+        whyDetail: String? = nil
+    ) {
+        self.title = title
+        self.items = items
+        self.explanation = explanation
+        self.warmthLevel = warmthLevel
+        self.bringLater = bringLater
+        self.whyDetail = whyDetail
+    }
+}
+
+enum MorningNotifyHour: Int, Codable, CaseIterable, Identifiable {
+    case six = 6
+    case seven = 7
+    case eight = 8
+
+    var id: Int { rawValue }
+
+    var label: String {
+        switch self {
+        case .six: return "6 AM"
+        case .seven: return "7 AM"
+        case .eight: return "8 AM"
+        }
+    }
+}
+
+struct NotificationPreference: Codable, Equatable {
+    var enabled: Bool
+    var hour: MorningNotifyHour
+    var weekdaysOnly: Bool
+
+    static let `default` = NotificationPreference(
+        enabled: false,
+        hour: .seven,
+        weekdaysOnly: true
+    )
 }

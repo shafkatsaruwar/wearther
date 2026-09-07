@@ -106,12 +106,20 @@ enum OutfitRecommender {
             rainy: rainy
         )
 
+        let why = whyDetail(
+            weather: input.weather,
+            windy: windy,
+            rainy: rainy,
+            later: later
+        )
+
         return OutfitRecommendation(
             title: title,
             items: dedupe(items),
             explanation: explanation,
             warmthLevel: warmthLevel,
-            bringLater: bringLater
+            bringLater: bringLater,
+            whyDetail: why
         )
     }
 
@@ -400,6 +408,43 @@ enum OutfitRecommender {
         var seen = Set<String>()
         let unique = reasons.filter { seen.insert($0).inserted }.prefix(2)
         return unique.joined(separator: " ")
+    }
+
+    private static func whyDetail(
+        weather: WeatherData,
+        windy: Bool,
+        rainy: Bool,
+        later: LaterAdvice?
+    ) -> String {
+        var parts: [String] = ["Feels like \(weather.feelsLike)°"]
+
+        if weather.humidity >= 70 {
+            parts.append("humidity is high (\(weather.humidity)%)")
+        } else if weather.humidity <= 35 {
+            parts.append("humidity is low (\(weather.humidity)%)")
+        } else {
+            parts.append("humidity is moderate (\(weather.humidity)%)")
+        }
+
+        if windy {
+            parts.append("wind is breezy (\(weather.windSpeed) mph)")
+        } else {
+            parts.append("wind is mild (\(weather.windSpeed) mph)")
+        }
+
+        if rainy {
+            parts.append("rain chance is \(weather.precipitationChance)%")
+        }
+
+        if let later {
+            parts.append("evening drops about \(later.drop)°")
+        } else if !weather.hourly.isEmpty {
+            let coldest = weather.hourly.map(\.feelsLike).min() ?? weather.feelsLike
+            let drop = max(0, weather.feelsLike - coldest)
+            parts.append("evening only drops \(drop)°")
+        }
+
+        return parts.joined(separator: ", ") + "."
     }
 
     private static func joinTitle(_ base: String, _ addition: String) -> String {

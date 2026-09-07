@@ -115,7 +115,11 @@ enum WidgetSnapshotStore {
             outfitTitle: title,
             shortOutfitTitle: short,
             explanation: outfit.explanation,
-            confidenceLabel: FitCopy.confidenceLabel(comfort),
+            confidenceLabel: FitCopy.confidenceLabel(
+                outfit: outfit,
+                weather: weather,
+                comfort: comfort
+            ),
             temperature: temp,
             feelsLike: feels,
             condition: weather.condition,

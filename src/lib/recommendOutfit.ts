@@ -99,6 +99,7 @@ export function recommendOutfit({
   }
 
   const explanation = craftExplanation(reasons, weather, windy, rainy);
+  const why = whyDetailText(weather, windy, rainy, later);
 
   return {
     title,
@@ -106,6 +107,7 @@ export function recommendOutfit({
     explanation,
     warmthLevel,
     bringLater,
+    whyDetail: why,
   };
 }
 
@@ -429,6 +431,43 @@ function craftExplanation(
 
   const unique = [...new Set(reasons)].slice(0, 2);
   return unique.join(" ");
+}
+
+function whyDetailText(
+  weather: WeatherData,
+  windy: boolean,
+  rainy: boolean,
+  later: { drop: number; message: string; short: string } | undefined,
+): string {
+  const parts: string[] = [`Feels like ${weather.feelsLike}°`];
+
+  if (weather.humidity >= 70) {
+    parts.push(`humidity is high (${weather.humidity}%)`);
+  } else if (weather.humidity <= 35) {
+    parts.push(`humidity is low (${weather.humidity}%)`);
+  } else {
+    parts.push(`humidity is moderate (${weather.humidity}%)`);
+  }
+
+  parts.push(
+    windy
+      ? `wind is breezy (${weather.windSpeed} mph)`
+      : `wind is mild (${weather.windSpeed} mph)`,
+  );
+
+  if (rainy) {
+    parts.push(`rain chance is ${weather.precipitationChance}%`);
+  }
+
+  if (later) {
+    parts.push(`evening drops about ${later.drop}°`);
+  } else if (weather.hourly.length) {
+    const coldest = Math.min(...weather.hourly.map((h) => h.feelsLike));
+    const drop = Math.max(0, weather.feelsLike - coldest);
+    parts.push(`evening only drops ${drop}°`);
+  }
+
+  return `${parts.join(", ")}.`;
 }
 
 function joinTitle(base: string, addition: string): string {

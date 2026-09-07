@@ -63,7 +63,8 @@ enum WeatherService {
             hourly: [],
             daily: [],
             units: "imperial",
-            fetchedAt: ISO8601DateFormatter().string(from: Date())
+            fetchedAt: ISO8601DateFormatter().string(from: Date()),
+            isMock: true
         )
     }
 }

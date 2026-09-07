@@ -65,6 +65,11 @@ struct MediumFitWidgetView: View {
                     .lineLimit(3)
                     .fixedSize(horizontal: false, vertical: true)
 
+                Text(snapshot.confidenceLabel)
+                    .font(WidgetPalette.sans(11, weight: .semibold))
+                    .foregroundStyle(WidgetPalette.sun)
+                    .lineLimit(1)
+
                 Spacer(minLength: 4)
 
                 HStack(spacing: 10) {
@@ -93,9 +98,11 @@ struct MediumFitWidgetView: View {
             Spacer(minLength: 0)
 
             VStack(spacing: 10) {
-                Image(systemName: "sun.max.fill")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(WidgetPalette.sun)
+                Image("BrandMark")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 28, height: 28)
+                    .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
                     .frame(maxWidth: .infinity, alignment: .trailing)
 
                 Spacer(minLength: 0)

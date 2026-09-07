@@ -68,7 +68,8 @@ struct MockWeatherProvider: WeatherProvider {
                 conditionCode: base.conditionCode
             ),
             units: "imperial",
-            fetchedAt: ISO8601DateFormatter().string(from: Date())
+            fetchedAt: ISO8601DateFormatter().string(from: Date()),
+            isMock: true
         )
     }
 

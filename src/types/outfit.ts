@@ -19,6 +19,7 @@ export interface OutfitRecommendation {
   explanation: string;
   warmthLevel: number;
   bringLater?: string;
+  whyDetail?: string;
 }
 
 export type ComfortFeedback = "too_cold" | "perfect" | "too_hot";
@@ -26,6 +27,13 @@ export type ComfortFeedback = "too_cold" | "perfect" | "too_hot";
 export type FeelBaseline = "colder" | "average" | "warmer";
 export type StyleMode = "casual" | "smart_casual" | "athletic" | "formal";
 export type TempUnits = "fahrenheit" | "celsius";
+
+export type FitConfidence =
+  | "Confident"
+  | "Bring backup"
+  | "Rain risk"
+  | "Evening drop"
+  | "Tuned for you";
 
 export interface AlwaysPackPrefs {
   rainJacket: boolean;

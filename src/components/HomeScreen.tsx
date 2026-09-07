@@ -1,20 +1,28 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
+import { BrandMark } from "@/components/BrandMark";
 import { CitySearch } from "@/components/CitySearch";
 import { ComfortFeedbackBar } from "@/components/ComfortFeedback";
 import { CustomizePanel } from "@/components/CustomizePanel";
 import { HourlyForecast } from "@/components/HourlyForecast";
+import { Onboarding } from "@/components/Onboarding";
 import { OutfitCard } from "@/components/OutfitCard";
-import { WeatherSummary } from "@/components/WeatherSummary";
+import { PackLane } from "@/components/PackLane";
+import { WeatherEvidence } from "@/components/WeatherEvidence";
 import {
   applyComfortFeedback,
   DEFAULT_COMFORT,
   loadComfortPreference,
   saveComfortPreference,
 } from "@/lib/comfort";
+import { isWeatherStale, updatedLabel } from "@/lib/fitCopy";
 import { recommendOutfit } from "@/lib/recommendOutfit";
-import { loadSavedLocation, saveLocation } from "@/lib/storage";
+import {
+  hasCompletedOnboarding,
+  loadSavedLocation,
+  saveLocation,
+} from "@/lib/storage";
 import { DEFAULT_CITY } from "@/services/weather";
 import type {
   ComfortFeedback,
@@ -47,50 +55,74 @@ async function fetchWeather(loc: LocationResult): Promise<WeatherData> {
 }
 
 export function HomeScreen() {
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [ready, setReady] = useState(false);
   const [location, setLocation] = useState<LocationResult>(DEFAULT_CITY);
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [outfit, setOutfit] = useState<OutfitRecommendation | null>(null);
   const [comfort, setComfort] = useState<ComfortPreference>(DEFAULT_COMFORT);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hydrated, setHydrated] = useState(false);
   const [customizeOpen, setCustomizeOpen] = useState(false);
+  const [, startTransition] = useTransition();
 
-  useEffect(() => {
-    let cancelled = false;
-
-    void Promise.resolve().then(() => {
-      if (cancelled) return;
-      setLocation(loadSavedLocation());
-      setComfort(loadComfortPreference());
-      setHydrated(true);
-    });
-
-    return () => {
-      cancelled = true;
-    };
+  const applyWeather = useCallback((data: WeatherData, pref: ComfortPreference) => {
+    setWeather(data);
+    setComfort(pref);
+    setOutfit(recommendOutfit({ weather: data, comfort: pref }));
+    setError(null);
   }, []);
 
-  useEffect(() => {
-    if (!hydrated) return;
+  const loadWeather = useCallback(
+    async (loc: LocationResult, mode: "full" | "soft") => {
+      if (mode === "full") setLoading(true);
+      else setRefreshing(true);
+      try {
+        const data = await fetchWeather(loc);
+        const pref = loadComfortPreference();
+        applyWeather(data, pref);
+      } catch {
+        setError("Couldn’t load weather. Try another city.");
+        if (mode === "full") {
+          setWeather(null);
+          setOutfit(null);
+        }
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [applyWeather],
+  );
 
+  useEffect(() => {
     let cancelled = false;
 
     void (async () => {
-      setLoading(true);
-      setError(null);
+      const onboarded = hasCompletedOnboarding();
+      if (cancelled) return;
+
+      if (!onboarded) {
+        setShowOnboarding(true);
+        setReady(true);
+        setLoading(false);
+        return;
+      }
+
+      const loc = loadSavedLocation();
+      const pref = loadComfortPreference();
+      setLocation(loc);
+      setComfort(pref);
+      setReady(true);
+
       try {
-        const data = await fetchWeather(location);
+        const data = await fetchWeather(loc);
         if (cancelled) return;
-        const pref = loadComfortPreference();
-        setWeather(data);
-        setComfort(pref);
-        setOutfit(recommendOutfit({ weather: data, comfort: pref }));
+        applyWeather(data, loadComfortPreference());
       } catch {
         if (cancelled) return;
         setError("Couldn’t load weather. Try another city.");
-        setWeather(null);
-        setOutfit(null);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -99,12 +131,16 @@ export function HomeScreen() {
     return () => {
       cancelled = true;
     };
-  }, [hydrated, location]);
+  }, [applyWeather]);
 
-  const handleSelectLocation = useCallback((loc: LocationResult) => {
-    saveLocation(loc);
-    setLocation(loc);
-  }, []);
+  const handleSelectLocation = useCallback(
+    (loc: LocationResult) => {
+      saveLocation(loc);
+      setLocation(loc);
+      void loadWeather(loc, "full");
+    },
+    [loadWeather],
+  );
 
   const handleFeedback = useCallback(
     (feedback: ComfortFeedback) => {
@@ -128,6 +164,32 @@ export function HomeScreen() {
     [weather],
   );
 
+  const finishOnboarding = useCallback(() => {
+    startTransition(() => {
+      const loc = loadSavedLocation();
+      const pref = loadComfortPreference();
+      setComfort(pref);
+      setLocation(loc);
+      setShowOnboarding(false);
+      setLoading(true);
+      void loadWeather(loc, "full");
+    });
+  }, [loadWeather]);
+
+  if (!ready) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-[var(--bg)]">
+        <BrandMark className="h-16 w-16 animate-pulse" />
+      </div>
+    );
+  }
+
+  if (showOnboarding) {
+    return <Onboarding onFinished={finishOnboarding} />;
+  }
+
+  const stale = weather ? isWeatherStale(weather.fetchedAt) : false;
+
   return (
     <div className="relative min-h-dvh overflow-hidden">
       <div className="pointer-events-none absolute inset-0 bg-atmosphere" aria-hidden />
@@ -148,10 +210,10 @@ export function HomeScreen() {
           <button
             type="button"
             onClick={() => setCustomizeOpen((v) => !v)}
-            className="mt-2 shrink-0 text-sm text-[var(--ink-muted)] transition-colors hover:text-[var(--ink)]"
+            className="mt-1 inline-flex min-h-11 shrink-0 items-center rounded-full bg-[var(--surface)] px-4 text-sm text-[var(--ink-soft)] ring-1 ring-[var(--line)] transition-colors hover:text-[var(--ink)]"
             aria-expanded={customizeOpen}
           >
-            Customize
+            Tune
           </button>
         </header>
 
@@ -164,31 +226,69 @@ export function HomeScreen() {
         )}
 
         {loading && (
-          <div className="mt-16 space-y-6 animate-pulse">
-            <div className="h-20 w-40 rounded-2xl bg-[var(--surface)]" />
-            <div className="h-4 w-56 rounded bg-[var(--surface)]" />
-            <div className="mt-10 h-56 rounded-[1.75rem] bg-[var(--fit-surface)]" />
+          <div className="mt-12 flex flex-col items-center gap-6">
+            <BrandMark className="h-14 w-14" />
+            <div className="w-full space-y-4 animate-pulse">
+              <div className="h-64 rounded-[1.875rem] bg-[var(--fit-surface)]" />
+              <div className="h-12 rounded-full bg-[var(--surface)]" />
+              <div className="h-36 rounded-[1.75rem] bg-[var(--surface)]" />
+            </div>
           </div>
         )}
 
-        {!loading && error && (
-          <p className="mt-16 text-center text-[var(--ink-muted)]">{error}</p>
+        {!loading && error && !weather && (
+          <div className="mt-16 flex flex-col items-center gap-4 text-center">
+            <BrandMark className="h-16 w-16" />
+            <p className="text-[var(--ink-muted)]">{error}</p>
+            <button
+              type="button"
+              onClick={() => void loadWeather(location, "full")}
+              className="min-h-11 rounded-full bg-[var(--accent)] px-5 text-sm font-medium text-white"
+            >
+              Try again
+            </button>
+          </div>
         )}
 
         {!loading && weather && outfit && !customizeOpen && (
-          <div className="mt-8 flex flex-col gap-10">
-            <WeatherSummary
-              weather={weather}
-              dateLabel={formatDateLabel()}
-              units={comfort.units}
-            />
+          <div className="mt-6 flex flex-col gap-6">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs text-[var(--ink-muted)]">
+                  {formatDateLabel()}
+                </p>
+                <p
+                  className={`mt-1 text-xs ${
+                    stale || weather.isMock
+                      ? "text-[var(--coral)]"
+                      : "text-[var(--ink-soft)]"
+                  }`}
+                >
+                  {updatedLabel(weather.fetchedAt)}
+                  {weather.isMock
+                    ? " · Demo weather"
+                    : stale
+                      ? " · May be stale"
+                      : ""}
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={refreshing}
+                onClick={() => void loadWeather(location, "soft")}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-[var(--surface)] text-[var(--accent)] ring-1 ring-[var(--line)] disabled:opacity-60"
+                aria-label="Refresh weather"
+              >
+                <span className={refreshing ? "inline-block animate-spin" : ""}>
+                  ↻
+                </span>
+              </button>
+            </div>
 
-            <div className="h-px w-full bg-[var(--line)]" />
-
-            <OutfitCard outfit={outfit} />
-
+            <OutfitCard outfit={outfit} weather={weather} comfort={comfort} />
+            <PackLane outfit={outfit} weather={weather} />
+            <WeatherEvidence weather={weather} units={comfort.units} />
             <HourlyForecast hours={weather.hourly} comfort={comfort} />
-
             <ComfortFeedbackBar
               lastFeedback={comfort.lastFeedback}
               onFeedback={handleFeedback}

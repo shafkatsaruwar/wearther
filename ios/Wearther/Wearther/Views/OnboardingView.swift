@@ -6,6 +6,7 @@ struct OnboardingView: View {
     @State private var step = 0
     @State private var selectedCity = MockWeatherProvider.defaultCity
     @State private var feelBaseline: FeelBaseline = .average
+    @State private var style: StyleMode = .casual
     @State private var searchQuery = ""
     @State private var searchResults: [LocationResult] = []
     @State private var isSearching = false
@@ -23,9 +24,9 @@ struct OnboardingView: View {
 
                 Group {
                     switch step {
-                    case 0: welcomeStep
-                    case 1: cityStep
-                    default: feelStep
+                    case 0: feelStep
+                    case 1: styleStep
+                    default: cityStep
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -49,33 +50,48 @@ struct OnboardingView: View {
         }
     }
 
-    private var welcomeStep: some View {
-        VStack(alignment: .leading, spacing: 20) {
+    private var styleStep: some View {
+        VStack(alignment: .leading, spacing: 16) {
             Spacer(minLength: 24)
 
-            Text("WEARTHER")
-                .font(AppFont.labelCaps)
-                .tracking(2.4)
-                .foregroundStyle(AppTheme.accent)
-
-            Text("Dress for the day,\nnot the forecast.")
+            Text("What style should Wearther assume?")
                 .font(AppFont.outfitTitle)
                 .foregroundStyle(AppTheme.ink)
-                .fixedSize(horizontal: false, vertical: true)
 
-            Text("Wearther turns weather into one clear outfit call — what to wear now, what to pack later.")
+            Text("Same weather, different wardrobe language. Change anytime in Tune.")
                 .font(AppFont.body)
                 .foregroundStyle(AppTheme.inkSoft)
-                .fixedSize(horizontal: false, vertical: true)
 
-            tipCard(
-                title: "Decision first",
-                body: "Skip the dashboard. Start with today’s fit."
-            )
-            tipCard(
-                title: "Save cities you care about",
-                body: "Check Boston this morning, London tonight — switch in one tap."
-            )
+            VStack(spacing: 10) {
+                ForEach(StyleMode.allCases, id: \.self) { option in
+                    Button {
+                        style = option
+                    } label: {
+                        HStack {
+                            Text(option.label)
+                                .font(AppFont.subheadlineMedium)
+                                .foregroundStyle(AppTheme.ink)
+                            Spacer()
+                            Image(systemName: style == option ? "checkmark.circle.fill" : "circle")
+                                .foregroundStyle(style == option ? AppTheme.accent : AppTheme.inkFaint)
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
+                        .background(
+                            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                .fill(AppTheme.surface)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                                        .stroke(
+                                            style == option ? AppTheme.accent.opacity(0.45) : AppTheme.line,
+                                            lineWidth: 1
+                                        )
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
 
             Spacer()
         }
@@ -141,13 +157,19 @@ struct OnboardingView: View {
 
     private var feelStep: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Spacer(minLength: 24)
+            Spacer(minLength: 16)
 
-            Text("How do you usually feel?")
+            Image("BrandMark")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 56, height: 56)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+
+            Text("Do you usually run cold, average, or warm?")
                 .font(AppFont.outfitTitle)
                 .foregroundStyle(AppTheme.ink)
 
-            Text("This nudges recommendations warmer or cooler. Change it anytime in Tune.")
+            Text("One question. Wearther uses it to nudge today’s fit.")
                 .font(AppFont.body)
                 .foregroundStyle(AppTheme.inkSoft)
 
@@ -158,7 +180,7 @@ struct OnboardingView: View {
                     } label: {
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(option.label)
+                                Text(feelLabel(option))
                                     .font(AppFont.subheadlineMedium)
                                     .foregroundStyle(AppTheme.ink)
                                 Text(feelHint(option))
@@ -217,18 +239,20 @@ struct OnboardingView: View {
         }
     }
 
-    private func tipCard(title: String, body: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(title)
-                .font(AppFont.subheadlineMedium)
-                .foregroundStyle(AppTheme.ink)
-            Text(body)
-                .font(AppFont.caption)
-                .foregroundStyle(AppTheme.inkMuted)
+    private func feelLabel(_ value: FeelBaseline) -> String {
+        switch value {
+        case .colder: return "I run cold"
+        case .average: return "Average"
+        case .warmer: return "I run warm"
         }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .cardSurface(radius: 18)
+    }
+
+    private func feelHint(_ value: FeelBaseline) -> String {
+        switch value {
+        case .colder: return "Recommend slightly warmer outfits"
+        case .average: return "Balanced for most people"
+        case .warmer: return "Recommend slightly cooler outfits"
+        }
     }
 
     private func sectionLabel(_ text: String) -> some View {
@@ -300,14 +324,6 @@ struct OnboardingView: View {
         }
     }
 
-    private func feelHint(_ value: FeelBaseline) -> String {
-        switch value {
-        case .colder: return "Recommend slightly warmer outfits"
-        case .average: return "Balanced for most people"
-        case .warmer: return "Recommend slightly cooler outfits"
-        }
-    }
-
     private func runSearch(_ query: String) {
         searchTask?.cancel()
         let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -343,6 +359,7 @@ struct OnboardingView: View {
 
         var comfort = ComfortStore.loadComfortPreference()
         comfort.feelBaseline = feelBaseline
+        comfort.style = style
         comfort.updatedAt = ISO8601DateFormatter().string(from: Date())
         ComfortStore.saveComfortPreference(comfort)
         ComfortStore.setOnboardingComplete(true)

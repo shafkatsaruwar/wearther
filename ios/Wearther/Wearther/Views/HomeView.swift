@@ -19,14 +19,10 @@ struct HomeView: View {
                         loadingPlaceholder
                             .padding(.top, 32)
                     } else if let error = viewModel.errorMessage, viewModel.weather == nil {
-                        Text(error)
-                            .font(AppFont.subheadline)
-                            .foregroundStyle(AppTheme.inkMuted)
-                            .frame(maxWidth: .infinity)
-                            .padding(.top, 64)
+                        errorState(error)
                     } else if let weather = viewModel.weather, let outfit = viewModel.outfit {
                         content(weather: weather, outfit: outfit)
-                            .padding(.top, 20)
+                            .padding(.top, 12)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -36,6 +32,9 @@ struct HomeView: View {
             }
             .scrollContentBackground(.hidden)
             .scrollIndicators(.hidden)
+            .refreshable {
+                await viewModel.refreshWeather(showFullLoading: false)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(AppTheme.bgMid.ignoresSafeArea())
@@ -77,18 +76,20 @@ struct HomeView: View {
     }
 
     private func content(weather: WeatherData, outfit: OutfitRecommendation) -> some View {
-        let tip = FitCopy.packTip(outfit: outfit, weather: weather)
+        let packs = FitCopy.packLaneItems(outfit: outfit, weather: weather)
 
-        return VStack(alignment: .leading, spacing: 28) {
-            WeatherSummaryView(
+        return VStack(alignment: .leading, spacing: 22) {
+            refreshStatus(weather: weather)
+
+            OutfitCardView(outfit: outfit, weather: weather, comfort: viewModel.comfort)
+
+            PackLaneView(items: packs)
+
+            WeatherEvidenceView(
                 weather: weather,
                 dateLabel: viewModel.dateLabel,
-                units: viewModel.comfort.units,
-                packLabel: tip.label,
-                packValue: tip.value
+                units: viewModel.comfort.units
             )
-
-            OutfitCardView(outfit: outfit, comfort: viewModel.comfort)
 
             HourlyForecastView(hours: weather.hourly, comfort: viewModel.comfort)
 
@@ -103,24 +104,104 @@ struct HomeView: View {
         }
     }
 
-    private var loadingPlaceholder: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .top, spacing: 12) {
-                RoundedRectangle(cornerRadius: 28, style: .continuous)
-                    .fill(AppTheme.surface)
-                    .frame(height: 160)
-                VStack(spacing: 12) {
-                    ForEach(0..<3, id: \.self) { _ in
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .fill(AppTheme.surface)
-                            .frame(height: 64)
+    private func refreshStatus(weather: WeatherData) -> some View {
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(viewModel.dateLabel)
+                    .font(AppFont.caption)
+                    .foregroundStyle(AppTheme.inkMuted)
+                HStack(spacing: 6) {
+                    Text(weather.updatedLabel)
+                        .font(AppFont.caption)
+                        .foregroundStyle(weather.isStale ? AppTheme.coral : AppTheme.inkSoft)
+                    if weather.isMock {
+                        Text("· Demo weather")
+                            .font(AppFont.caption)
+                            .foregroundStyle(AppTheme.coral)
+                    } else if weather.isStale {
+                        Text("· May be stale")
+                            .font(AppFont.caption)
+                            .foregroundStyle(AppTheme.coral)
                     }
                 }
-                .frame(width: 118)
             }
+
+            Spacer()
+
+            Button {
+                Task { await viewModel.refreshWeather(showFullLoading: false) }
+            } label: {
+                Image(systemName: "arrow.clockwise")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(AppTheme.accent)
+                    .rotationEffect(.degrees(viewModel.isRefreshing ? 360 : 0))
+                    .animation(
+                        viewModel.isRefreshing
+                            ? .linear(duration: 0.8).repeatForever(autoreverses: false)
+                            : .default,
+                        value: viewModel.isRefreshing
+                    )
+                    .frame(width: 44, height: 44)
+                    .background(Circle().fill(AppTheme.surface))
+                    .overlay(Circle().stroke(AppTheme.line, lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+            .disabled(viewModel.isRefreshing)
+            .accessibilityLabel("Refresh weather")
+        }
+    }
+
+    private func errorState(_ message: String) -> some View {
+        VStack(spacing: 16) {
+            Image("BrandMark")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 72, height: 72)
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                .padding(.top, 48)
+
+            Text(message)
+                .font(AppFont.subheadline)
+                .foregroundStyle(AppTheme.inkMuted)
+                .multilineTextAlignment(.center)
+
+            Button {
+                Task { await viewModel.refreshWeather() }
+            } label: {
+                Text("Try again")
+                    .font(AppFont.subheadlineMedium)
+                    .foregroundStyle(.white)
+                    .frame(minWidth: 140, minHeight: 44)
+                    .background(Capsule().fill(AppTheme.accent))
+            }
+            .buttonStyle(.plain)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var loadingPlaceholder: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Spacer()
+                Image("BrandMark")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 56, height: 56)
+                    .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .opacity(0.9)
+                Spacer()
+            }
+            .padding(.bottom, 8)
+
             RoundedRectangle(cornerRadius: 30, style: .continuous)
                 .fill(AppTheme.fitSurface)
-                .frame(height: 260)
+                .frame(height: 280)
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(AppTheme.surface)
+                .frame(height: 52)
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(AppTheme.surface)
+                .frame(height: 120)
         }
         .redacted(reason: .placeholder)
         .shimmering()
