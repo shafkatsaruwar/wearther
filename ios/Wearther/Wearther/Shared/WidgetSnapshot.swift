@@ -141,10 +141,13 @@ enum WidgetSnapshotStore {
         let cleaned = title
             .replacingOccurrences(of: ", No Jacket", with: "", options: .caseInsensitive)
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        if let first = cleaned.split(separator: ",").first {
-            return String(first).trimmingCharacters(in: .whitespacesAndNewlines)
+        let primary = cleaned.split(separator: ",").first.map(String.init)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? cleaned
+        // Keep the lead garment phrase for tight widget space.
+        if let beforePlus = primary.split(separator: "+").first {
+            return String(beforePlus).trimmingCharacters(in: .whitespacesAndNewlines)
         }
-        return cleaned
+        return primary
     }
 
     private static func laterSlots(from hourly: [HourlyWeather], units: TempUnits) -> [WidgetHourSlot] {
