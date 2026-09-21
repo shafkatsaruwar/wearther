@@ -1,0 +1,135 @@
+# frozen_string_literal: true
+
+require "shellwords"
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Build Wearther and upload to TestFlight"
+  lane :beta do
+    setup_ci if ENV["CI"]
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("APP_STORE_CONNECT_KEY_ID"),
+      issuer_id: ENV.fetch("APP_STORE_CONNECT_ISSUER_ID"),
+      key_content: ENV.fetch("APP_STORE_CONNECT_API_KEY"),
+      duration: 1200,
+      in_house: false
+    )
+
+    team_id = ENV.fetch("APPLE_TEAM_ID")
+
+    build_number =
+      if ENV["BUILD_NUMBER_OVERRIDE"].to_s.strip.empty?
+        latest = begin
+          latest_testflight_build_number(
+            api_key: api_key,
+            app_identifier: "com.wearther.app"
+          )
+        rescue StandardError => e
+          UI.important("Could not read latest TestFlight build (#{e.message}); starting from 0")
+          0
+        end
+        (latest.to_i + 1).to_s
+      else
+        ENV["BUILD_NUMBER_OVERRIDE"].to_s.strip
+      end
+
+    UI.success("Using build number #{build_number}")
+
+    increment_build_number(
+      build_number: build_number,
+      xcodeproj: "Wearther.xcodeproj"
+    )
+
+    [
+      File.expand_path("../Wearther/Info.plist", __dir__),
+      File.expand_path("../WeartherWidgets/Info.plist", __dir__)
+    ].each do |plist|
+      next unless File.exist?(plist)
+
+      system("/usr/libexec/PlistBuddy", "-c", "Set :CFBundleVersion #{build_number}", plist)
+      system("/usr/libexec/PlistBuddy", "-c", "Set :CFBundleShortVersionString 1.0", plist)
+    end
+
+    profiles_dir = File.expand_path("~/Library/MobileDevice/Provisioning Profiles")
+    profile_paths = Dir.glob(File.join(profiles_dir, "*.mobileprovision"))
+    UI.message("Installed profiles (#{profile_paths.length}): #{profile_paths.map { |p| File.basename(p) }}")
+
+    app_profile_path = profile_paths.find { |p| profile_includes_bundle_id?(p, "com.wearther.app") && !profile_includes_bundle_id?(p, "com.wearther.app.widgets") }
+    widget_profile_path = profile_paths.find { |p| profile_includes_bundle_id?(p, "com.wearther.app.widgets") }
+
+    UI.user_error!("No App Store profile found for com.wearther.app") if app_profile_path.nil?
+    UI.user_error!("No App Store profile found for com.wearther.app.widgets") if widget_profile_path.nil?
+
+    app_profile_name = profile_name(app_profile_path)
+    widget_profile_name = profile_name(widget_profile_path)
+    UI.message("App profile name: #{app_profile_name}")
+    UI.message("Widget profile name: #{widget_profile_name}")
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Wearther.xcodeproj",
+      team_id: team_id,
+      targets: ["Wearther"],
+      code_sign_identity: "Apple Distribution",
+      profile_name: app_profile_name,
+      bundle_identifier: "com.wearther.app"
+    )
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Wearther.xcodeproj",
+      team_id: team_id,
+      targets: ["WeartherWidgets"],
+      code_sign_identity: "Apple Distribution",
+      profile_name: widget_profile_name,
+      bundle_identifier: "com.wearther.app.widgets"
+    )
+
+    build_app(
+      project: "Wearther.xcodeproj",
+      scheme: "Wearther",
+      configuration: "Release",
+      clean: true,
+      export_method: "app-store",
+      output_directory: "build",
+      output_name: "Wearther",
+      xcargs: "DEVELOPMENT_TEAM=#{team_id}",
+      export_options: {
+        method: "app-store",
+        signingStyle: "manual",
+        teamID: team_id,
+        provisioningProfiles: {
+          "com.wearther.app" => app_profile_name,
+          "com.wearther.app.widgets" => widget_profile_name
+        }
+      }
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true,
+      distribute_external: false,
+      changelog: "CI build #{build_number}"
+    )
+  end
+end
+
+def profile_plist(path)
+  `security cms -D -i #{Shellwords.escape(path)} 2>/dev/null`
+end
+
+def profile_includes_bundle_id?(path, bundle_id)
+  plist = profile_plist(path)
+  plist.include?(".#{bundle_id}</string>") || plist.include?("<string>#{bundle_id}</string>")
+end
+
+def profile_name(path)
+  plist = profile_plist(path)
+  if plist =~ %r{<key>Name</key>\s*<string>(.*?)</string>}m
+    Regexp.last_match(1)
+  else
+    File.basename(path, ".*")
+  end
+end
