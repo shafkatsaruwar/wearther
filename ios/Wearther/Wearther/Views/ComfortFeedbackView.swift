@@ -31,6 +31,8 @@ struct ComfortFeedbackView: View {
                     } label: {
                         Text(opt.label)
                             .font(AppFont.subheadlineMedium)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
                             .frame(maxWidth: .infinity)
                             .frame(minHeight: 44)
                             .foregroundStyle(foreground(selected: selected, primary: opt.primary))

@@ -28,14 +28,21 @@ struct HomeView: View {
                     } else if let error = viewModel.errorMessage, viewModel.weather == nil {
                         errorState(error)
                     } else if let weather = viewModel.weather, let outfit = viewModel.outfit {
-                        // Fill the viewport so the bottom doesn’t read as empty atmosphere.
-                        decisionSpine(weather: weather, outfit: outfit)
-                            .padding(.horizontal, 16)
-                            .padding(.bottom, 12)
-                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                            .refreshable {
-                                await viewModel.refreshWeather(showFullLoading: false)
-                            }
+                        GeometryReader { geo in
+                            let pad = PhoneLayout.horizontalPadding(for: geo.size.width)
+                            adaptiveDecisionBoard(
+                                weather: weather,
+                                outfit: outfit,
+                                size: geo.size
+                            )
+                            .padding(.horizontal, pad)
+                            .padding(.bottom, 8)
+                            .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .refreshable {
+                            await viewModel.refreshWeather(showFullLoading: false)
+                        }
                     }
                 }
             }
@@ -188,52 +195,48 @@ struct HomeView: View {
 
     // MARK: - Canvas spine
 
-    private func decisionSpine(weather: WeatherData, outfit: OutfitRecommendation) -> some View {
+    /// Tall phones get a filled board; short/narrow phones scroll so nothing clips.
+    private func adaptiveDecisionBoard(
+        weather: WeatherData,
+        outfit: OutfitRecommendation,
+        size: CGSize
+    ) -> some View {
+        ViewThatFits(in: .vertical) {
+            decisionSpine(weather: weather, outfit: outfit, size: size, fillsHeight: true)
+            ScrollView(.vertical, showsIndicators: false) {
+                decisionSpine(weather: weather, outfit: outfit, size: size, fillsHeight: false)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+    }
+
+    private func decisionSpine(
+        weather: WeatherData,
+        outfit: OutfitRecommendation,
+        size: CGSize,
+        fillsHeight: Bool
+    ) -> some View {
         let confidence = FitCopy.confidence(outfit: outfit, weather: weather, comfort: viewModel.comfort)
         let units = viewModel.comfort.units
         let bring = FitCopy.bringSummary(outfit: outfit, weather: weather)
         let nowLine = FitCopy.nowSummary(items: outfit.items)
+        let spacing = PhoneLayout.boardSpacing(for: size.height)
+        let compactWidth = PhoneLayout.isCompactWidth(size.width)
+        let titleSize = PhoneLayout.displayTitleSize(for: size.width)
+        let innerPad: CGFloat = compactWidth ? 12 : 16
 
-        return VStack(alignment: .leading, spacing: 14) {
+        return VStack(alignment: .leading, spacing: spacing) {
             statusBanner
 
             // Answer first
             VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .center, spacing: 8) {
-                    Text("WEAR THIS TODAY")
-                        .font(AppFont.labelCaps)
-                        .tracking(1.6)
-                        .foregroundStyle(AppTheme.accent)
-
-                    if RemoteConfigStore.current.flags.enableOccasionPicker {
-                        Button {
-                            viewModel.isOccasionPickerOpen = true
-                        } label: {
-                            HStack(spacing: 4) {
-                                Text(viewModel.occasion.pillLabel)
-                                    .font(AppFont.captionSemibold)
-                                Image(systemName: "chevron.down")
-                                    .font(.system(size: 9, weight: .bold))
-                            }
-                            .foregroundStyle(AppTheme.accent)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(Capsule().fill(AppTheme.mint))
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Today's context, \(viewModel.occasion.pillLabel)")
-                    }
-
-                    Spacer(minLength: 8)
-
-                    confidencePill(confidence)
-                }
+                titleMetaRow(confidence: confidence, compactWidth: compactWidth)
 
                 Text(FitCopy.formatTitle(outfit))
-                    .font(AppFont.display(34))
+                    .font(AppFont.display(titleSize))
                     .foregroundStyle(AppTheme.ink)
                     .lineLimit(3)
-                    .minimumScaleFactor(0.78)
+                    .minimumScaleFactor(0.72)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text(FitCopy.decisionSubtitle(outfit: outfit, weather: weather))
@@ -271,48 +274,126 @@ struct HomeView: View {
                     if index > 0 {
                         Divider().opacity(0.55)
                     }
-                    clothingRow(info: info, raw: item)
+                    clothingRow(info: info, raw: item, compact: compactWidth)
                 }
             }
             .padding(.vertical, 4)
 
             // Weather proof
-            weatherProof(weather: weather, units: units)
+            weatherProof(weather: weather, units: units, compact: compactWidth)
 
-            Spacer(minLength: 12)
+            if fillsHeight {
+                Spacer(minLength: 8)
+            }
 
             // Trip is separate — one small entry
             if RemoteConfigStore.current.flags.enableTripPack {
-                HStack {
-                    Text("Planning a trip?")
-                        .font(AppFont.caption)
-                        .foregroundStyle(AppTheme.inkMuted)
-                    Spacer(minLength: 8)
-                    NavigationLink {
-                        TripPackScreen()
-                    } label: {
-                        Text("Open Trip Pack")
-                            .font(AppFont.subheadlineMedium)
-                            .underline()
-                            .foregroundStyle(AppTheme.accent)
+                ViewThatFits(in: .horizontal) {
+                    HStack {
+                        Text("Planning a trip?")
+                            .font(AppFont.caption)
+                            .foregroundStyle(AppTheme.inkMuted)
+                        Spacer(minLength: 8)
+                        NavigationLink {
+                            TripPackScreen()
+                        } label: {
+                            Text("Open Trip Pack")
+                                .font(AppFont.subheadlineMedium)
+                                .underline()
+                                .foregroundStyle(AppTheme.accent)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Planning a trip?")
+                            .font(AppFont.caption)
+                            .foregroundStyle(AppTheme.inkMuted)
+                        NavigationLink {
+                            TripPackScreen()
+                        } label: {
+                            Text("Open Trip Pack")
+                                .font(AppFont.subheadlineMedium)
+                                .underline()
+                                .foregroundStyle(AppTheme.accent)
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
             }
 
             // Feedback sits at the bottom of the filled board
             feedbackBlock
-                .padding(.top, 6)
+                .padding(.top, fillsHeight ? 6 : 2)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 14)
-        .padding(.bottom, 16)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .padding(.horizontal, innerPad)
+        .padding(.top, compactWidth ? 12 : 14)
+        .padding(.bottom, compactWidth ? 12 : 16)
+        .frame(maxWidth: .infinity, maxHeight: fillsHeight ? .infinity : nil, alignment: .topLeading)
         .background(
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
+            RoundedRectangle(cornerRadius: compactWidth ? 22 : 28, style: .continuous)
                 .fill(AppTheme.fitSurface)
                 .shadow(color: AppTheme.ink.opacity(0.06), radius: 14, y: 6)
         )
+    }
+
+    @ViewBuilder
+    private func titleMetaRow(confidence: FitConfidence, compactWidth: Bool) -> some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center, spacing: 8) {
+                Text("WEAR THIS TODAY")
+                    .font(AppFont.labelCaps)
+                    .tracking(compactWidth ? 1.2 : 1.6)
+                    .foregroundStyle(AppTheme.accent)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+
+                if RemoteConfigStore.current.flags.enableOccasionPicker {
+                    occasionPill
+                }
+
+                Spacer(minLength: 4)
+
+                confidencePill(confidence)
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Text("WEAR THIS TODAY")
+                        .font(AppFont.labelCaps)
+                        .tracking(1.2)
+                        .foregroundStyle(AppTheme.accent)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.85)
+                    Spacer(minLength: 4)
+                    confidencePill(confidence)
+                }
+                if RemoteConfigStore.current.flags.enableOccasionPicker {
+                    occasionPill
+                }
+            }
+        }
+    }
+
+    private var occasionPill: some View {
+        Button {
+            viewModel.isOccasionPickerOpen = true
+        } label: {
+            HStack(spacing: 4) {
+                Text(viewModel.occasion.pillLabel)
+                    .font(AppFont.captionSemibold)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 9, weight: .bold))
+            }
+            .foregroundStyle(AppTheme.accent)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(Capsule().fill(AppTheme.mint))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Today's context, \(viewModel.occasion.pillLabel)")
     }
 
     @ViewBuilder
@@ -387,6 +468,8 @@ struct HomeView: View {
             Text(body)
                 .font(AppFont.subheadlineMedium)
                 .foregroundStyle(AppTheme.ink)
+                .lineLimit(4)
+                .minimumScaleFactor(0.85)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }
@@ -398,16 +481,16 @@ struct HomeView: View {
         )
     }
 
-    private func clothingRow(info: ClothingInfo, raw: String) -> some View {
+    private func clothingRow(info: ClothingInfo, raw: String, compact: Bool) -> some View {
         Button {
             selectedItem = info
         } label: {
-            HStack(alignment: .center, spacing: 12) {
+            HStack(alignment: .center, spacing: compact ? 10 : 12) {
                 ZStack {
                     Circle()
                         .fill(AppTheme.fitIconBg)
-                        .frame(width: 40, height: 40)
-                    ClothingGlyphView(label: raw, size: 16)
+                        .frame(width: compact ? 36 : 40, height: compact ? 36 : 40)
+                    ClothingGlyphView(label: raw, size: compact ? 14 : 16)
                         .foregroundStyle(AppTheme.accent)
                 }
 
@@ -415,47 +498,53 @@ struct HomeView: View {
                     Text(info.name)
                         .font(AppFont.subheadlineMedium)
                         .foregroundStyle(AppTheme.ink)
-                        .lineLimit(1)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.85)
                     Text(info.subtitle)
                         .font(AppFont.caption)
                         .foregroundStyle(AppTheme.inkMuted)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.85)
                 }
-
-                Spacer(minLength: 8)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
                 Text("What?")
                     .font(AppFont.captionSemibold)
                     .foregroundStyle(AppTheme.accent)
+                    .layoutPriority(1)
             }
-            .padding(.vertical, 10)
+            .padding(.vertical, compact ? 8 : 10)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(info.name). What is this?")
     }
 
-    private func weatherProof(weather: WeatherData, units: TempUnits) -> some View {
+    private func weatherProof(weather: WeatherData, units: TempUnits, compact: Bool) -> some View {
         let slots = weatherSlots(weather: weather, units: units)
         return HStack(alignment: .top, spacing: 0) {
             ForEach(Array(slots.enumerated()), id: \.offset) { index, slot in
                 if index > 0 {
                     Divider()
-                        .frame(height: 44)
-                        .padding(.horizontal, 6)
+                        .frame(height: compact ? 40 : 44)
+                        .padding(.horizontal, compact ? 4 : 6)
                 }
                 VStack(alignment: .leading, spacing: 2) {
                     Text(slot.label)
                         .font(AppFont.caption)
                         .foregroundStyle(AppTheme.inkMuted)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                     Text(slot.temp)
                         .font(AppFont.subheadlineMedium)
                         .foregroundStyle(AppTheme.ink)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
                     Text(slot.tip)
                         .font(AppFont.caption2)
                         .foregroundStyle(AppTheme.inkSoft)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.8)
+                        .minimumScaleFactor(0.75)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -558,6 +647,8 @@ struct HomeView: View {
         } label: {
             Text(label)
                 .font(AppFont.captionSemibold)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
                 .frame(maxWidth: .infinity)
                 .frame(minHeight: 40)
                 .foregroundStyle(selected ? Color.white : (primary ? AppTheme.accent : AppTheme.inkSoft))
