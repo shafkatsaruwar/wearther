@@ -176,22 +176,37 @@ struct TripPackScreen: View {
     }
 
     private var daysStepper: some View {
-        HStack {
-            Text("Trip length")
-                .font(AppFont.subheadline)
-                .foregroundStyle(AppTheme.inkSoft)
-            Spacer()
-            HStack(spacing: 14) {
-                stepButton(systemName: "minus") {
-                    viewModel.days = max(1, viewModel.days - 1)
-                }
-                Text("\(viewModel.days) day\(viewModel.days == 1 ? "" : "s")")
-                    .font(AppFont.subheadlineMedium)
-                    .foregroundStyle(AppTheme.ink)
-                    .frame(minWidth: 64)
-                stepButton(systemName: "plus") {
-                    viewModel.days = min(7, viewModel.days + 1)
-                }
+        ViewThatFits(in: .horizontal) {
+            HStack {
+                Text("Trip length")
+                    .font(AppFont.subheadline)
+                    .foregroundStyle(AppTheme.inkSoft)
+                Spacer(minLength: 8)
+                daysControls
+            }
+
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Trip length")
+                    .font(AppFont.subheadline)
+                    .foregroundStyle(AppTheme.inkSoft)
+                daysControls
+            }
+        }
+    }
+
+    private var daysControls: some View {
+        HStack(spacing: 12) {
+            stepButton(systemName: "minus") {
+                viewModel.days = max(1, viewModel.days - 1)
+            }
+            Text("\(viewModel.days) day\(viewModel.days == 1 ? "" : "s")")
+                .font(AppFont.subheadlineMedium)
+                .foregroundStyle(AppTheme.ink)
+                .lineLimit(1)
+                .minimumScaleFactor(0.85)
+                .frame(minWidth: 56)
+            stepButton(systemName: "plus") {
+                viewModel.days = min(7, viewModel.days + 1)
             }
         }
     }
@@ -214,7 +229,7 @@ struct TripPackScreen: View {
                 .font(AppFont.subheadlineMedium)
                 .foregroundStyle(AppTheme.ink)
             LazyVGrid(
-                columns: [GridItem(.adaptive(minimum: 120), spacing: 8, alignment: .leading)],
+                columns: [GridItem(.adaptive(minimum: 100), spacing: 8, alignment: .leading)],
                 alignment: .leading,
                 spacing: 8
             ) {
