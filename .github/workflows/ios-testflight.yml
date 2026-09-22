@@ -59,23 +59,10 @@ jobs:
           p12-file-base64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
           p12-password: ${{ secrets.P12_PASSWORD }}
 
-      - name: Download App provisioning profile
-        uses: apple-actions/download-provisioning-profiles@v1
-        with:
-          bundle-id: com.wearther.app
-          profile-type: IOS_APP_STORE
-          issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          api-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
-
-      - name: Download Widget provisioning profile
-        uses: apple-actions/download-provisioning-profiles@v1
-        with:
-          bundle-id: com.wearther.app.widgets
-          profile-type: IOS_APP_STORE
-          issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          api-key-id: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+      # Provisioning profiles are created/downloaded by Fastlane `sigh`
+      # (manually managed App Store profiles). Do not use apple-actions
+      # download here — it often pulls Xcode-managed profiles that fail
+      # with Manual signing.
 
       - name: Setup Ruby / Bundler
         uses: ruby/setup-ruby@v1
