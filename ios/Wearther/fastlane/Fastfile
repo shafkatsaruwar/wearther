@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "shellwords"
-
 default_platform(:ios)
 
 platform :ios do
@@ -52,20 +50,29 @@ platform :ios do
       system("/usr/libexec/PlistBuddy", "-c", "Set :CFBundleShortVersionString 1.0", plist)
     end
 
-    profiles_dir = File.expand_path("~/Library/MobileDevice/Provisioning Profiles")
-    profile_paths = Dir.glob(File.join(profiles_dir, "*.mobileprovision"))
-    UI.message("Installed profiles (#{profile_paths.length}): #{profile_paths.map { |p| File.basename(p) }}")
+    # Create/download *manually managed* App Store profiles (not Xcode-managed).
+    # Xcode-managed "iOS Team Store…" profiles cannot be used with Manual signing.
+    get_provisioning_profile(
+      api_key: api_key,
+      app_identifier: "com.wearther.app",
+      provisioning_name: "Wearther App Store CI",
+      ignore_profiles_with_different_name: true,
+      force: true
+    )
+    app_profile_name = lane_context[SharedValues::SIGH_NAME]
+    app_profile_path = lane_context[SharedValues::SIGH_PROFILE_PATH]
+    UI.message("App profile: #{app_profile_name} (#{app_profile_path})")
 
-    app_profile_path = profile_paths.find { |p| profile_includes_bundle_id?(p, "com.wearther.app") && !profile_includes_bundle_id?(p, "com.wearther.app.widgets") }
-    widget_profile_path = profile_paths.find { |p| profile_includes_bundle_id?(p, "com.wearther.app.widgets") }
-
-    UI.user_error!("No App Store profile found for com.wearther.app") if app_profile_path.nil?
-    UI.user_error!("No App Store profile found for com.wearther.app.widgets") if widget_profile_path.nil?
-
-    app_profile_name = profile_name(app_profile_path)
-    widget_profile_name = profile_name(widget_profile_path)
-    UI.message("App profile name: #{app_profile_name}")
-    UI.message("Widget profile name: #{widget_profile_name}")
+    get_provisioning_profile(
+      api_key: api_key,
+      app_identifier: "com.wearther.app.widgets",
+      provisioning_name: "Wearther Widgets App Store CI",
+      ignore_profiles_with_different_name: true,
+      force: true
+    )
+    widget_profile_name = lane_context[SharedValues::SIGH_NAME]
+    widget_profile_path = lane_context[SharedValues::SIGH_PROFILE_PATH]
+    UI.message("Widget profile: #{widget_profile_name} (#{widget_profile_path})")
 
     update_code_signing_settings(
       use_automatic_signing: false,
@@ -113,23 +120,5 @@ platform :ios do
       distribute_external: false,
       changelog: "CI build #{build_number}"
     )
-  end
-end
-
-def profile_plist(path)
-  `security cms -D -i #{Shellwords.escape(path)} 2>/dev/null`
-end
-
-def profile_includes_bundle_id?(path, bundle_id)
-  plist = profile_plist(path)
-  plist.include?(".#{bundle_id}</string>") || plist.include?("<string>#{bundle_id}</string>")
-end
-
-def profile_name(path)
-  plist = profile_plist(path)
-  if plist =~ %r{<key>Name</key>\s*<string>(.*?)</string>}m
-    Regexp.last_match(1)
-  else
-    File.basename(path, ".*")
   end
 end
