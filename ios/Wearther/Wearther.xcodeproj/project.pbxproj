@@ -39,7 +39,7 @@
 		AA000001000000000000001B /* Fraunces-72pt-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA000101000000000000001C /* Fraunces-72pt-Regular.ttf */; };
 		AA000001000000000000001C /* Fraunces-72pt-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AA000101000000000000001D /* Fraunces-72pt-SemiBold.ttf */; };
 		AA0000010000000000000017 /* AppFonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000018 /* AppFonts.swift */; };
-		AA000001000000000000002A /* PhoneLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000029 /* PhoneLayout.swift */; };
+		AA0000010000000000000033 /* PhoneLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000029 /* PhoneLayout.swift */; };
 		AA0000010000000000000023 /* FitCopy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000023 /* FitCopy.swift */; };
 		AA0000010000000000000024 /* WidgetSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA0001010000000000000024 /* WidgetSnapshot.swift */; };
 		AA000001000000000000002A /* MorningNotificationScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000101000000000000002A /* MorningNotificationScheduler.swift */; };
@@ -466,7 +466,7 @@
 				AA000001000000000000002E /* TripPackViewModel.swift in Sources */,
 				AA000001000000000000000B /* AppTheme.swift in Sources */,
 				AA0000010000000000000017 /* AppFonts.swift in Sources */,
-				AA000001000000000000002A /* PhoneLayout.swift in Sources */,
+				AA0000010000000000000033 /* PhoneLayout.swift in Sources */,
 				AA0000010000000000000023 /* FitCopy.swift in Sources */,
 				AA0000010000000000000024 /* WidgetSnapshot.swift in Sources */,
 				AA000001000000000000002D /* ClothingInfo.swift in Sources */,
