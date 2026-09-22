@@ -1,0 +1,10 @@
+# Fastlane
+ios/Wearther/build/
+ios/Wearther/vendor/
+ios/Wearther/.bundle/
+ios/Wearther/fastlane/report.xml
+ios/Wearther/fastlane/Preview.html
+ios/Wearther/fastlane/screenshots/**/*.png
+ios/Wearther/fastlane/test_output/
+*.ipa
+*.dSYM.zip
