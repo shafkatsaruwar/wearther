@@ -7,47 +7,45 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                AtmosphereBackground()
+            VStack(spacing: 0) {
+                header
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 8)
 
-                VStack(spacing: 0) {
-                    header
-                        .padding(.horizontal, 16)
-                        .padding(.top, 2)
-                        .padding(.bottom, 6)
-
-                    if viewModel.isCustomizeOpen {
-                        ScrollView {
-                            CustomizeView(viewModel: viewModel)
-                                .padding(.horizontal, 16)
-                                .padding(.bottom, 24)
-                        }
-                        .scrollIndicators(.hidden)
-                    } else if viewModel.isLoading {
-                        loadingPlaceholder
-                    } else if let error = viewModel.errorMessage, viewModel.weather == nil {
-                        errorState(error)
-                    } else if let weather = viewModel.weather, let outfit = viewModel.outfit {
-                        GeometryReader { geo in
-                            let pad = PhoneLayout.horizontalPadding(for: geo.size.width)
-                            adaptiveDecisionBoard(
-                                weather: weather,
-                                outfit: outfit,
-                                size: geo.size
-                            )
-                            .padding(.horizontal, pad)
-                            .padding(.bottom, 6)
-                            .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .refreshable {
-                            await viewModel.refreshWeather(showFullLoading: false)
-                        }
+                if viewModel.isCustomizeOpen {
+                    ScrollView {
+                        CustomizeView(viewModel: viewModel)
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 24)
+                    }
+                    .scrollIndicators(.hidden)
+                } else if viewModel.isLoading {
+                    loadingPlaceholder
+                } else if let error = viewModel.errorMessage, viewModel.weather == nil {
+                    errorState(error)
+                } else if let weather = viewModel.weather, let outfit = viewModel.outfit {
+                    GeometryReader { geo in
+                        let pad = PhoneLayout.horizontalPadding(for: geo.size.width)
+                        adaptiveDecisionBoard(
+                            weather: weather,
+                            outfit: outfit,
+                            size: geo.size
+                        )
+                        .padding(.horizontal, pad)
+                        .padding(.bottom, max(geo.safeAreaInsets.bottom, 8))
+                        .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .refreshable {
+                        await viewModel.refreshWeather(showFullLoading: false)
                     }
                 }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(AppTheme.bgMid.ignoresSafeArea())
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .background {
+                AtmosphereBackground()
+            }
             .toolbar(.hidden, for: .navigationBar)
             .sheet(item: $selectedItem) { info in
                 ClothingInfoSheet(info: info)
@@ -150,6 +148,7 @@ struct HomeView: View {
         HStack(alignment: .center, spacing: 8) {
             CitySearchView(viewModel: viewModel)
                 .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(height: 36)
 
             Button {
                 viewModel.locateMe()
@@ -163,7 +162,7 @@ struct HomeView: View {
                     }
                 }
                 .foregroundStyle(AppTheme.accent)
-                .frame(width: 34, height: 34)
+                .frame(width: 36, height: 36)
                 .background(Circle().fill(AppTheme.mint.opacity(0.9)))
             }
             .buttonStyle(.plain)
@@ -181,7 +180,7 @@ struct HomeView: View {
                 Image(systemName: "slider.horizontal.3")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(AppTheme.inkSoft)
-                    .frame(width: 34, height: 34)
+                    .frame(width: 36, height: 36)
                     .background(
                         Circle()
                             .fill(AppTheme.surface)
@@ -191,6 +190,7 @@ struct HomeView: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Tune preferences")
         }
+        .frame(height: 36)
     }
 
     // MARK: - Canvas spine
