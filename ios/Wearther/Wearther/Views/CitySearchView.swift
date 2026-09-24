@@ -9,19 +9,19 @@ struct CitySearchView: View {
                 viewModel.isCityPickerOpen.toggle()
             }
         } label: {
-            HStack(spacing: 6) {
+            HStack(alignment: .center, spacing: 6) {
                 Text(viewModel.location.name)
                     .font(AppFont.display(22))
                     .foregroundStyle(AppTheme.ink)
                     .lineLimit(1)
                     .minimumScaleFactor(0.55)
                     .frame(maxWidth: .infinity, alignment: .leading)
+
                 Image(systemName: viewModel.isCityPickerOpen ? "chevron.up" : "chevron.down")
-                    .font(AppFont.captionSemibold)
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(AppTheme.inkMuted)
-                    .padding(.top, 2)
             }
-            .frame(minHeight: 36, alignment: .center)
+            .frame(maxWidth: .infinity, minHeight: 36, maxHeight: 36, alignment: .center)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
