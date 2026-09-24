@@ -11,7 +11,7 @@ struct CitySearchView: View {
         } label: {
             HStack(spacing: 6) {
                 Text(viewModel.location.name)
-                    .font(AppFont.display(26))
+                    .font(AppFont.display(22))
                     .foregroundStyle(AppTheme.ink)
                     .lineLimit(1)
                     .minimumScaleFactor(0.55)
@@ -19,9 +19,9 @@ struct CitySearchView: View {
                 Image(systemName: viewModel.isCityPickerOpen ? "chevron.up" : "chevron.down")
                     .font(AppFont.captionSemibold)
                     .foregroundStyle(AppTheme.inkMuted)
-                    .padding(.top, 4)
+                    .padding(.top, 2)
             }
-            .frame(minHeight: 40, alignment: .center)
+            .frame(minHeight: 36, alignment: .center)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

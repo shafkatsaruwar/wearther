@@ -12,14 +12,14 @@ struct HomeView: View {
 
                 VStack(spacing: 0) {
                     header
-                        .padding(.horizontal, 18)
-                        .padding(.top, 4)
-                        .padding(.bottom, 8)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 2)
+                        .padding(.bottom, 6)
 
                     if viewModel.isCustomizeOpen {
                         ScrollView {
                             CustomizeView(viewModel: viewModel)
-                                .padding(.horizontal, 18)
+                                .padding(.horizontal, 16)
                                 .padding(.bottom, 24)
                         }
                         .scrollIndicators(.hidden)
@@ -36,7 +36,7 @@ struct HomeView: View {
                                 size: geo.size
                             )
                             .padding(.horizontal, pad)
-                            .padding(.bottom, 8)
+                            .padding(.bottom, 6)
                             .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -159,11 +159,11 @@ struct HomeView: View {
                         ProgressView().controlSize(.small)
                     } else {
                         Image(systemName: "location.fill")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: 13, weight: .semibold))
                     }
                 }
                 .foregroundStyle(AppTheme.accent)
-                .frame(width: 40, height: 40)
+                .frame(width: 34, height: 34)
                 .background(Circle().fill(AppTheme.mint.opacity(0.9)))
             }
             .buttonStyle(.plain)
@@ -179,9 +179,9 @@ struct HomeView: View {
                 }
             } label: {
                 Image(systemName: "slider.horizontal.3")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(AppTheme.inkSoft)
-                    .frame(width: 40, height: 40)
+                    .frame(width: 34, height: 34)
                     .background(
                         Circle()
                             .fill(AppTheme.surface)
@@ -223,45 +223,45 @@ struct HomeView: View {
         let spacing = PhoneLayout.boardSpacing(for: size.height)
         let compactWidth = PhoneLayout.isCompactWidth(size.width)
         let titleSize = PhoneLayout.displayTitleSize(for: size.width)
-        let innerPad: CGFloat = compactWidth ? 12 : 16
+        let innerPad = PhoneLayout.boardInnerPadding(for: size.width)
 
         return VStack(alignment: .leading, spacing: spacing) {
             statusBanner
 
             // Answer first
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 5) {
                 titleMetaRow(confidence: confidence, compactWidth: compactWidth)
 
                 Text(FitCopy.formatTitle(outfit))
                     .font(AppFont.display(titleSize))
                     .foregroundStyle(AppTheme.ink)
                     .lineLimit(3)
-                    .minimumScaleFactor(0.72)
+                    .minimumScaleFactor(0.78)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Text(FitCopy.decisionSubtitle(outfit: outfit, weather: weather))
-                    .font(AppFont.subheadline)
+                    .font(AppFont.caption)
                     .foregroundStyle(AppTheme.inkSoft)
                     .fixedSize(horizontal: false, vertical: true)
 
                 Button {
                     showWhy = true
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 3) {
                         Text("Why?")
-                            .font(AppFont.subheadlineMedium)
+                            .font(AppFont.captionSemibold)
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(.system(size: 9, weight: .bold))
                     }
                     .foregroundStyle(AppTheme.accent)
                 }
                 .buttonStyle(.plain)
-                .padding(.top, 2)
+                .padding(.top, 1)
                 .accessibilityLabel("Why this fit")
             }
 
             // NOW / BRING — equal height side-by-side cards
-            HStack(alignment: .top, spacing: 10) {
+            HStack(alignment: .top, spacing: 8) {
                 summaryCard(title: "NOW", body: nowLine)
                 summaryCard(title: "BRING", body: bring ?? "Travel light")
             }
@@ -274,16 +274,16 @@ struct HomeView: View {
                     if index > 0 {
                         Divider().opacity(0.55)
                     }
-                    clothingRow(info: info, raw: item, compact: compactWidth)
+                    clothingRow(info: info, raw: item, compact: true)
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, 2)
 
             // Weather proof
-            weatherProof(weather: weather, units: units, compact: compactWidth)
+            weatherProof(weather: weather, units: units, compact: true)
 
             if fillsHeight {
-                Spacer(minLength: 8)
+                Spacer(minLength: 4)
             }
 
             // Trip is separate — one small entry
@@ -291,29 +291,29 @@ struct HomeView: View {
                 ViewThatFits(in: .horizontal) {
                     HStack {
                         Text("Planning a trip?")
-                            .font(AppFont.caption)
+                            .font(AppFont.caption2)
                             .foregroundStyle(AppTheme.inkMuted)
                         Spacer(minLength: 8)
                         NavigationLink {
                             TripPackScreen()
                         } label: {
                             Text("Open Trip Pack")
-                                .font(AppFont.subheadlineMedium)
+                                .font(AppFont.captionSemibold)
                                 .underline()
                                 .foregroundStyle(AppTheme.accent)
                         }
                         .buttonStyle(.plain)
                     }
 
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 3) {
                         Text("Planning a trip?")
-                            .font(AppFont.caption)
+                            .font(AppFont.caption2)
                             .foregroundStyle(AppTheme.inkMuted)
                         NavigationLink {
                             TripPackScreen()
                         } label: {
                             Text("Open Trip Pack")
-                                .font(AppFont.subheadlineMedium)
+                                .font(AppFont.captionSemibold)
                                 .underline()
                                 .foregroundStyle(AppTheme.accent)
                         }
@@ -324,16 +324,16 @@ struct HomeView: View {
 
             // Feedback sits at the bottom of the filled board
             feedbackBlock
-                .padding(.top, fillsHeight ? 6 : 2)
+                .padding(.top, fillsHeight ? 4 : 1)
         }
         .padding(.horizontal, innerPad)
-        .padding(.top, compactWidth ? 12 : 14)
-        .padding(.bottom, compactWidth ? 12 : 16)
+        .padding(.top, 10)
+        .padding(.bottom, 12)
         .frame(maxWidth: .infinity, maxHeight: fillsHeight ? .infinity : nil, alignment: .topLeading)
         .background(
-            RoundedRectangle(cornerRadius: compactWidth ? 22 : 28, style: .continuous)
+            RoundedRectangle(cornerRadius: PhoneLayout.boardCornerRadius(for: size.width), style: .continuous)
                 .fill(AppTheme.fitSurface)
-                .shadow(color: AppTheme.ink.opacity(0.06), radius: 14, y: 6)
+                .shadow(color: AppTheme.ink.opacity(0.05), radius: 10, y: 4)
         )
     }
 
@@ -388,8 +388,8 @@ struct HomeView: View {
                     .font(.system(size: 9, weight: .bold))
             }
             .foregroundStyle(AppTheme.accent)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
             .background(Capsule().fill(AppTheme.mint))
         }
         .buttonStyle(.plain)
@@ -448,8 +448,8 @@ struct HomeView: View {
                 ? AppTheme.coral
                 : AppTheme.accent
         )
-        .padding(.horizontal, 10)
-        .padding(.vertical, 5)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
         .background(
             Capsule().fill(
                 confidence == .rainRisk || confidence == .eveningDrop
@@ -460,23 +460,23 @@ struct HomeView: View {
     }
 
     private func summaryCard(title: String, body: String) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 4) {
             Text(title)
                 .font(AppFont.labelCaps)
-                .tracking(1.2)
+                .tracking(1.0)
                 .foregroundStyle(AppTheme.accent)
             Text(body)
-                .font(AppFont.subheadlineMedium)
+                .font(AppFont.captionSemibold)
                 .foregroundStyle(AppTheme.ink)
-                .lineLimit(4)
+                .lineLimit(3)
                 .minimumScaleFactor(0.85)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }
-        .padding(12)
+        .padding(10)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(AppTheme.mint.opacity(0.55))
         )
     }
@@ -485,23 +485,23 @@ struct HomeView: View {
         Button {
             selectedItem = info
         } label: {
-            HStack(alignment: .center, spacing: compact ? 10 : 12) {
+            HStack(alignment: .center, spacing: 10) {
                 ZStack {
                     Circle()
                         .fill(AppTheme.fitIconBg)
-                        .frame(width: compact ? 36 : 40, height: compact ? 36 : 40)
-                    ClothingGlyphView(label: raw, size: compact ? 14 : 16)
+                        .frame(width: 32, height: 32)
+                    ClothingGlyphView(label: raw, size: 13)
                         .foregroundStyle(AppTheme.accent)
                 }
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text(info.name)
-                        .font(AppFont.subheadlineMedium)
+                        .font(AppFont.captionSemibold)
                         .foregroundStyle(AppTheme.ink)
                         .lineLimit(2)
                         .minimumScaleFactor(0.85)
                     Text(info.subtitle)
-                        .font(AppFont.caption)
+                        .font(AppFont.caption2)
                         .foregroundStyle(AppTheme.inkMuted)
                         .lineLimit(1)
                         .minimumScaleFactor(0.85)
@@ -509,11 +509,12 @@ struct HomeView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
                 Text("What?")
-                    .font(AppFont.captionSemibold)
+                    .font(AppFont.caption2)
+                    .fontWeight(.semibold)
                     .foregroundStyle(AppTheme.accent)
                     .layoutPriority(1)
             }
-            .padding(.vertical, compact ? 8 : 10)
+            .padding(.vertical, 6)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -526,17 +527,17 @@ struct HomeView: View {
             ForEach(Array(slots.enumerated()), id: \.offset) { index, slot in
                 if index > 0 {
                     Divider()
-                        .frame(height: compact ? 40 : 44)
-                        .padding(.horizontal, compact ? 4 : 6)
+                        .frame(height: 36)
+                        .padding(.horizontal, 4)
                 }
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: 1) {
                     Text(slot.label)
-                        .font(AppFont.caption)
+                        .font(AppFont.caption2)
                         .foregroundStyle(AppTheme.inkMuted)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                     Text(slot.temp)
-                        .font(AppFont.subheadlineMedium)
+                        .font(AppFont.captionSemibold)
                         .foregroundStyle(AppTheme.ink)
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
@@ -553,15 +554,15 @@ struct HomeView: View {
                 Task { await viewModel.refreshWeather(showFullLoading: false) }
             } label: {
                 Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(AppTheme.accent.opacity(0.7))
-                    .frame(width: 28, height: 28)
+                    .frame(width: 24, height: 24)
             }
             .buttonStyle(.plain)
             .disabled(viewModel.isRefreshing)
             .accessibilityLabel("Refresh weather")
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 4)
     }
 
     private struct WeatherSlot {
@@ -620,13 +621,13 @@ struct HomeView: View {
     }
 
     private var feedbackBlock: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             Text("HOW WOULD THIS FEEL?")
                 .font(AppFont.labelCaps)
-                .tracking(1.2)
+                .tracking(1.0)
                 .foregroundStyle(AppTheme.inkMuted)
 
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 feedbackChip("Too cold", id: .tooCold, primary: false)
                 feedbackChip("Perfect", id: .perfect, primary: true)
                 feedbackChip("Too hot", id: .tooHot, primary: false)
@@ -634,7 +635,7 @@ struct HomeView: View {
 
             if let last = viewModel.comfort.lastFeedback {
                 Text(FitCopy.feedbackResponse(last))
-                    .font(AppFont.caption)
+                    .font(AppFont.caption2)
                     .foregroundStyle(AppTheme.accent)
             }
         }
@@ -650,7 +651,7 @@ struct HomeView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
                 .frame(maxWidth: .infinity)
-                .frame(minHeight: 40)
+                .frame(minHeight: 34)
                 .foregroundStyle(selected ? Color.white : (primary ? AppTheme.accent : AppTheme.inkSoft))
                 .background {
                     if selected {
